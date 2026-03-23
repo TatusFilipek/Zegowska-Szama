@@ -1,0 +1,27 @@
+uzytkownik {
+	id int pk
+	ID_rodzajUrzytkownika int > rodzajUzytkownika.id
+	nazwa varchar
+	haslo varchar > klasa.id
+}
+
+rodzajUzytkownika {
+	id int pk > Fact_Pagos_Recibidos.id
+	rodaj varchar
+}
+
+zamowienia {
+	id integer pk increments unique
+	ID_uzytkownik integer > uzytkownik.id
+	ID_produkt integer > produkt.id
+	wplacono integer
+	wyslano bool
+	odebrano bool
+}
+
+produkt {
+	id integer pk increments unique
+	nazwa varchar
+	skladniki varchar
+	ilosc integer
+}
