@@ -1,0 +1,34 @@
+przewidywane klasy:
+
+User
+-> name str
+-> email str
+-> id int
+-> role Role
+-> settings Settings
+
+Role
+-> name str
+-> permission lvl set<enum>
+(0 - see offers, 1 - manage orders, 2 - push announcements, 3 - manage roles)
+
+Settings
+-> light mode bool
+-> [...] (unfinished)
+
+Product
+-> name str
+-> id int
+-> price int (cents)
+-> discount int (0%-100%)
+-> stock unsigned int
+
+Order
+-> user User
+-> id int
+-> status enum (0 - pending, 1 - processing, 2 - completed)
+-> contents array<item>
+
+Item
+-> item Product (includes price information)
+-> quantity int
