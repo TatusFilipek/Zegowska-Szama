@@ -1,0 +1,8 @@
+dark theme
+
+#86A77F normal green
+#46826C desaturated green
+#37645D dark desaturated green
+#333F5A dark desaturated blue
+#3D384A dark desaturated purple
+#87718B desaturated pink
