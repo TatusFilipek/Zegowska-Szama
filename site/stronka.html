@@ -7,25 +7,25 @@
     <link rel="stylesheet" href="styl.css">
 </head>
 <body class="vh-100 d-flex flex-column">
-    <div class="p-2 ps-4 header text-lowercase fs-4 d-flex gap-4 middle">
+    <div class="header text-lowercase fs-4 d-flex gap-4 middle dropdown p-2 ps-3">
         <div class="m-auto">
             <img src="logo.png" style="width: 55px;">
         </div>
         <div class="m-auto flex-fill fs-3">Szama</div>
-        <div class="m-auto">
-            <div class="dropdown d-flex flex-row-reverse">
-                <img class="btn bi bi-list m-0 p-0" data-bs-toggle="dropdown" aria-expanded="false" src="burger.png" style="width: 55px;">
-                <ul class="dropdown-menu custom-dropdown-menu p-0">
-                    <li><a class="dropdown-item custom-item" href="#">Profile</a></li>
-                    <li><a class="dropdown-item custom-item" href="#">Checkout</a></li>
-                    <li><a class="dropdown-item custom-item" href="#">Notifications</a></li>
-                    <li><a class="dropdown-item custom-item" href="#">Offers</a></li>
-                    <li><a class="dropdown-item custom-item" href="#">Manage</a></li>
-                </ul>
-            </div>
+        <div class="m-auto" data-bs-toggle="dropdown" aria-expanded="false">
+            <img class="btn bi bi-list m-0 p-0" src="burger.png" style="width: 55px;">
         </div>
+        <ul class="row dropdown-menu custom-dropdown-menu w-100 mt-1 p-0">
+            <li><a class="dropdown-item custom-item" href="#">Profile</a></li>
+            <li><a class="dropdown-item custom-item" href="#">Checkout</a></li>
+            <li><a class="dropdown-item custom-item" href="#">Notifications</a></li>
+            <li><a class="dropdown-item custom-item" href="#">Offers</a></li>
+            <li><a class="dropdown-item custom-item" href="#">Manage</a></li>
+        </ul>
     </div>
-    <div class="flex-fill"></div>
+    <div class="flex-fill">
+        <div>Tresc</div>
+    </div>
     <div class="p-3 footer text-lowercase fs-5">School's website</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
