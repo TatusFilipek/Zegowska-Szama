@@ -53,3 +53,12 @@
     background-color: #739171 !important;
     color: #35323e !important;
 }
+
+/* Ukrywamy standardowy scrollbar, aby wyglądało to estetycznie jak na makiecie */
+.scroll-container::-webkit-scrollbar {
+    display: none;
+}
+.scroll-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
