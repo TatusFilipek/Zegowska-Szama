@@ -1,23 +1,41 @@
 document.querySelectorAll('.category-section').forEach(section => {
             const container = section.querySelector('.scroll-container');
-            const arrow = section.querySelector('.scroll-arrow');
+            const arrowLeft = section.querySelector('.scroll-arrow-left');
+            const arrowRight = section.querySelector('.scroll-arrow-right');
 
-            // Funkcja sprawdzająca czy zawartość się przepełnia
-            function checkOverflow() {
-                if (container.scrollWidth > container.clientWidth) {
-                    arrow.classList.remove('d-none');
+            function updateArrows() {
+                const scrollLeft = container.scrollLeft;
+                const maxScrollLeft = container.scrollWidth - container.clientWidth;
+
+                // Pokazuj lewą strzałkę tylko, gdy przewinięto w prawo (scrollLeft > 0)
+                if (scrollLeft > 5) {
+                    arrowLeft.classList.remove('d-none');
                 } else {
-                    arrow.classList.add('d-none');
+                    arrowLeft.classList.add('d-none');
+                }
+
+                // Pokazuj prawą strzałkę tylko, gdy jest jeszcze co przewijać w prawo
+                if (maxScrollLeft > scrollLeft + 5) {
+                    arrowRight.classList.remove('d-none');
+                } else {
+                    arrowRight.classList.add('d-none');
                 }
             }
 
-            // Obsługa kliknięcia w strzałkę (przewijanie o 200 pikseli)
-            arrow.addEventListener('click', () => {
+            // Przewijanie w lewo
+            arrowLeft.addEventListener('click', () => {
+                container.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+
+            // Przewijanie w prawo
+            arrowRight.addEventListener('click', () => {
                 container.scrollBy({ left: 200, behavior: 'smooth' });
             });
 
-            // Sprawdzaj przepełnienie przy ładowaniu i zmianie rozmiaru okna
-            window.addEventListener('resize', checkOverflow);
-            // Mały timeout, żeby Bootstrap zdążył wyrenderować szerokości
-            setTimeout(checkOverflow, 100);
+            // Reaguj na przewijanie palcem/myszką oraz zmiany rozmiaru okna
+            container.addEventListener('scroll', updateArrows);
+            window.addEventListener('resize', updateArrows);
+            
+            // Inicjalne sprawdzenie po załadowaniu makiety
+            setTimeout(updateArrows, 100);
         });
