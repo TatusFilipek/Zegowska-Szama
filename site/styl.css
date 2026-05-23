@@ -62,3 +62,15 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+a
+{
+    color: #333F5A;
+    text-decoration: none;
+}
+
+a:hover
+{
+    color: #424d68;
+    text-decoration: none;
+}
