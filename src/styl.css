@@ -1,0 +1,76 @@
+*
+{
+    font-family: "Roboto";
+}
+
+.header, .footer
+{
+    font-weight: bolder;
+}
+
+.header
+{
+    background-color: #46826C;
+    color: #333F5A;
+}
+
+.footer, .darkColor
+{
+    background-color: #333F5A;
+    color: #87718B;
+}
+
+/* Styl dla całego kontenera menu */
+.custom-dropdown-menu {
+    background-color: #83a281 !important; /* Ten charakterystyczny zielony odcień */
+    border: none !important;
+    border-radius: 0px !important; /* Brak zaokrągleń na rogach */
+    min-width: 280px; /* Szerokość menu, dopasuj według uznania */
+}
+
+/* Styl dla pojedynczego linku (opcji) w menu */
+.custom-dropdown-menu .custom-item {
+    color: #35323e !important; /* Ciemny, grafitowo-fioletowy kolor tekstu */
+    font-size: 1.8rem; /* Duży font, jak na obrazku */
+    font-weight: 500; /* Pogrubienie tekstu */
+    padding: 10px 20px; /* Odstępy wewnątrz opcji */
+    border-bottom: 2px solid #5a6e59; /* Ciemniejsza linia oddzielająca pod każdym elementem */
+    background: none !important;
+    transition: background-color 0.2s ease;
+}
+
+.custom-dropdown-menu .custom-item::first-letter {
+    text-transform: uppercase;
+}
+
+/* Usunięcie linii pod ostatnim elementem (opcjonalnie, na obrazku pod 'Manage' też jest linia, więc ten krok można pominąć jeśli chcesz ją zostawić) */
+/* .custom-dropdown-menu li:last-child .custom-item {
+    border-bottom: none;
+} */
+
+/* Efekt po najechaniu myszką (delikatne przyciemnienie tła) */
+.custom-dropdown-menu .custom-item:hover {
+    background-color: #739171 !important;
+    color: #35323e !important;
+}
+
+/* Ukrywamy standardowy scrollbar, aby wyglądało to estetycznie jak na makiecie */
+.scroll-container::-webkit-scrollbar {
+    display: none;
+}
+.scroll-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+a
+{
+    color: #333F5A;
+    text-decoration: none;
+}
+
+a:hover
+{
+    color: #424d68;
+    text-decoration: none;
+}
