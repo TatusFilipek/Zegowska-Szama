@@ -74,3 +74,31 @@ a:hover
     color: #424d68;
     text-decoration: none;
 }
+
+/* Główny styl tekstu */
+.promo-text {
+    color: #2b2a3a; /* Ciemny grafit */
+}
+
+/* Kolor dla słowa "store" */
+.promo-text .accent-text {
+    color: #8b7e95; /* Stonowany fiolet */
+}
+
+/* Bazowy styl dla wszystkich baniek */
+.bubble {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none; /* Sprawia, że bańki nie blokują kliknięć myszką */
+    z-index: 1;
+    aspect-ratio: 1/1;
+}
+
+/* Paleta kolorów baniek */
+.bubble-dark {
+    background-color: #383545; /* Ciemny grafitowy/fiolet */
+}
+
+.bubble-purple {
+    background-color: #7b738b; /* Jasny fioletowy */
+}
