@@ -7,33 +7,7 @@
     <link rel="stylesheet" href="styl.css">
 </head>
 <body class="vh-100 d-flex flex-column">
-    <div class="header text-lowercase fs-4 d-flex align-items-center gap-4 dropdown p-2 ps-3">
-        <div class="my-auto">
-            <a href="main.php"><img src="../design/photos/zeg-icon.png" style="width: 55px;"></a>
-        </div>
-        <div class="my-auto flex-fill fs-3">
-            <a href="main.php">Szama</a>
-        </div>
-
-        <div class="d-none d-md-flex gap-5 my-auto fs-3 me-3">
-            <a class="text-capitalize" href="profile.html">Profile</a>
-            <a class="text-capitalize" href="checkout.html">Checkout</a>
-            <a class="text-capitalize" href="notifications.html">Notifications</a>
-            <a class="text-capitalize" href="offers.html">Offers</a>
-            <a class="text-capitalize" href="manage.html">Manage</a>
-        </div>
-        
-        <div class="my-auto d-md-none" data-bs-toggle="dropdown" aria-expanded="false">
-            <img class="btn bi bi-list m-0 p-0" src="../design/photos/burger.png" style="width: 55px;">
-        </div>
-        <ul class="row dropdown-menu custom-dropdown-menu w-100 mt-1 p-0 d-md-none">
-            <li><a class="dropdown-item custom-item" href="profile.html">Profile</a></li>
-            <li><a class="dropdown-item custom-item" href="checkout.html">Checkout</a></li>
-            <li><a class="dropdown-item custom-item" href="notifications.html">Notifications</a></li>
-            <li><a class="dropdown-item custom-item" href="offers.html">Offers</a></li>
-            <li><a class="dropdown-item custom-item" href="manage.html">Manage</a></li>
-        </ul>
-    </div>
+<?php require_once __DIR__ . '/header.php'; ?>
 
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-inline d-md-none">
         

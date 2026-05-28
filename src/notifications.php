@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Zegowska Szama</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styl.css">
+</head>
+<body class="vh-100 d-flex flex-column">
+<?php require_once __DIR__ . '/header.php'; ?>
+
+    <div class="flex-fill container-fluid px-4 py-3 overflow-auto">
+        
+        <div class="text-start my-4">
+            <h3 class="display-6 border-bottom pb-2 fw-bold" style="color: #4a5568; border-color: #4a5568 !important; font-weight: 300;">Mailbox</h3>
+        </div>
+
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+                <span style="color: #8b8b9e; font-size: 1.20rem; font-weight: 500;">This is a title</span>
+                <span style="color: #a0a0b0;">26.02.2026</span>
+            </div>
+            <p style="color: #4a5568; line-height: 1.6; font-size: 1.25rem; font-weight: 500;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas nisl tortor, pharetra commodo elit ut, scelerisque pulvinar velit.</p>
+        </div>
+
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+                <span style="color: #8b8b9e; font-size: 1.20rem; font-weight: 500;">This is a title</span>
+                <span style="color: #a0a0b0;">67.69.2137</span>
+            </div>
+            <p style="color: #4a5568; line-height: 1.6; font-size: 1.25rem; font-weight: 500;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas nisl tortor, pharetra commodo elit ut, scelerisque pulvinar velit.</p>
+        </div>
+    </div>
+    <div class="p-3 footer text-lowercase fs-5">School's website</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="skrypt.js"></script>
+</body>
+</html>
