@@ -68,7 +68,7 @@
         </div>
 
         <!-- Content -->
-        <div id="checkout-content" class="vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
+        <div id="checkout-content" class="content-section vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
             <h2 class="fw-bold mb-4 text-start pb-2 ps-1" style="color: #2e3d52; border-bottom: 1px solid #2e3d52; font-size: 2rem;">Your order</h2>
             
             <div class="order-table-container flex-fill">
@@ -136,44 +136,38 @@
             </div>
 
             <div class="d-flex gap-3 mb-4">
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Order</button>
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
+                <button class="btn-next" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Order</button>
+                <button class="btn-cancel" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
             </div>
         </div>
 
-        <div id="payment-content" class="vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
+        <div id="payment-content" class="content-section d-none vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
             <div class="flex-fill">
             <div class="fw-bold fs-2 text-center my-3">Please pay <span style="color: #87718B;">5.99$</span> at the register</div>
             <div class="fw-bold fs-2 text-center my-5">An employee will confirm your <span style="color: #87718B;">payment</span></div>
             </div>
 
             <div class="d-flex gap-3 mb-4">
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Continue</button>
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
+                <button class="btn-next" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Continue</button>
+                <button class="btn-cancel" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
             </div>
         </div>
 
-        <div id="proccessing-content" class="vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
+        <div id="proccessing-content" class="content-section d-none vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
             <div class="flex-fill">
             <div class="fw-bold fs-2 text-center my-3">Payment complete</div>
             <div class="fw-bold fs-2 text-center my-5">Your number is <span style="color: #87718B;">51</span></div>
             </div>
 
             <div class="d-flex gap-3 mb-4">
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Continue</button>
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
+                <button class="btn-next" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Continue</button>
             </div>
         </div>
 
-        <div id="collect-content" class="vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
+        <div id="collect-content" class="content-section d-none vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
             <div class="flex-fill">
             <div class="fw-bold fs-2 text-center my-3">Please collect your order at the register</div>
             <div class="fw-bold fs-2 text-center my-5">Thank you</div>
-            </div>
-
-            <div class="d-flex gap-3 mb-4">
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Continue</button>
-                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
             </div>
         </div>
     </div>
@@ -181,5 +175,28 @@
     <div class="p-3 footer text-lowercase fs-5">School's website</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ids = ['checkout-content','payment-content','proccessing-content','collect-content'];
+        const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
+
+        function getCurrentSection() {
+            return sections.find(s => !s.classList.contains('d-none')) || null;
+        }
+
+        document.querySelectorAll('.btn-next').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const current = btn.closest('.content-section') || getCurrentSection();
+                const idx = sections.indexOf(current);
+                if (idx >= 0 && idx < sections.length - 1) {
+                    current.classList.add('d-none');
+                    const next = sections[idx + 1];
+                    next.classList.remove('d-none');
+                    next.scrollIntoView({behavior: 'smooth', block: 'start'});
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>
