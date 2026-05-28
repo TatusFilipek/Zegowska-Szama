@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
-        if ($user && $user['password'] === $password) {
+        if ($user && (password_verify($password, $user['password']) || $user['password'] === $password)) {
             $_SESSION['user_id'] = $user['id'];
             header('Location: main.php');
             exit;
