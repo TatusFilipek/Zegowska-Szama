@@ -44,35 +44,8 @@
         </div>
 
         <div class="mb-5 position-relative category-section">
-            <h2 class="display-6 border-bottom pb-2" style="color: #4a5568; border-color: #3b4257 !important;">Category</h2>
-
             <div class="position-relative">
-                <div class="d-flex overflow-x-auto flex-nowrap gap-3 scroll-container pe-5">
-                    <div style="min-width: 120px;">
-                        <div class="fw-bold text-dark mb-0">Product</div>
-                        <small class="d-block text-success mb-2" style="font-size: 0.75rem;">0% OFF!</small>
-                        <div class="rounded bg-secondary" style="width: 100%; aspect-ratio: 1/1; background-color: #3b4257 !important;"></div>
-                        <div class="mt-2 text-muted text-center fw-semibold">00.00$</div>
-                    </div>
-                    <div style="min-width: 120px;">
-                        <div class="fw-bold text-dark mb-0">Product</div>
-                        <small class="d-block text-success mb-2" style="font-size: 0.75rem;">0% OFF!</small>
-                        <div class="rounded bg-secondary" style="width: 100%; aspect-ratio: 1/1; background-color: #3b4257 !important;"></div>
-                        <div class="mt-2 text-muted text-center fw-semibold">00.00$</div>
-                    </div>
-                    <div style="min-width: 120px;">
-                        <div class="fw-bold text-dark mb-0">Product</div>
-                        <small class="d-block text-success mb-2" style="font-size: 0.75rem;">0% OFF!</small>
-                        <div class="rounded bg-secondary" style="width: 100%; aspect-ratio: 1/1; background-color: #3b4257 !important;"></div>
-                        <div class="mt-2 text-muted text-center fw-semibold">00.00$</div>
-                    </div>
-                    <div style="min-width: 120px;">
-                        <div class="fw-bold text-dark mb-0">Product</div>
-                        <small class="d-block text-success mb-2" style="font-size: 0.75rem;">0% OFF!</small>
-                        <div class="rounded bg-secondary" style="width: 100%; aspect-ratio: 1/1; background-color: #3b4257 !important;"></div>
-                        <div class="mt-2 text-muted text-center fw-semibold">00.00$</div>
-                    </div>
-                </div>
+                <div id="mobile-categories"></div>
 
                 <div class="scroll-arrow-left d-none position-absolute start-0 d-flex align-items-center h-100 top-0 ps-2" style="cursor: pointer; background: linear-gradient(270deg, transparent 0%, white 40%); z-index: 5; padding-right: 20px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-left text-dark fw-bold" viewBox="0 0 16 16">
@@ -111,43 +84,8 @@
         </div>
 
         <div class="mb-5 position-relative category-section px-4">
-            <h2 class="display-6 border-bottom pb-2" style="color: #4a5568; border-color: #3b4257 !important;">Category</h2>
-
             <div class="position-relative">
-                <div class="d-flex overflow-x-auto flex-nowrap gap-5 scroll-container pe-5">
-                    <div class="d-flex gap-3" style="min-width: 240px; max-height: 120px;">
-                        <div class="rounded bg-secondary" style="width: 50%; height: 100%; background-color: #3b4257 !important;"></div>
-                        <div>
-                            <div class="fw-bold text-dark mb-0 fs-3">Product</div>
-                            <small class="d-block text-success mb-2 fs-6" style="font-size: 0.75rem;">0% OFF!</small>
-                            <div class="mt-2 text-muted fw-semibold fs-1">00.00$</div>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-3" style="min-width: 240px; max-height: 120px;">
-                        <div class="rounded bg-secondary" style="width: 50%; height: 100%; background-color: #3b4257 !important;"></div>
-                        <div>
-                            <div class="fw-bold text-dark mb-0 fs-3">Product</div>
-                            <small class="d-block text-success mb-2 fs-6" style="font-size: 0.75rem;">0% OFF!</small>
-                            <div class="mt-2 text-muted fw-semibold fs-1">00.00$</div>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-3" style="min-width: 240px; max-height: 120px;">
-                        <div class="rounded bg-secondary" style="width: 50%; height: 100%; background-color: #3b4257 !important;"></div>
-                        <div>
-                            <div class="fw-bold text-dark mb-0 fs-3">Product</div>
-                            <small class="d-block text-success mb-2 fs-6" style="font-size: 0.75rem;">0% OFF!</small>
-                            <div class="mt-2 text-muted fw-semibold fs-1">00.00$</div>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-3" style="min-width: 240px; max-height: 120px;">
-                        <div class="rounded bg-secondary" style="width: 50%; height: 100%; background-color: #3b4257 !important;"></div>
-                        <div>
-                            <div class="fw-bold text-dark mb-0 fs-3">Product</div>
-                            <small class="d-block text-success mb-2 fs-6" style="font-size: 0.75rem;">0% OFF!</small>
-                            <div class="mt-2 text-muted fw-semibold fs-1">00.00$</div>
-                        </div>
-                    </div>
-                </div>
+                <div id="desktop-categories"></div>
                 
 
                 <div class="scroll-arrow-left d-none position-absolute start-0 d-flex align-items-center h-100 top-0 ps-2" style="cursor: pointer; background: linear-gradient(270deg, transparent 0%, white 40%); z-index: 5; padding-right: 20px;">
@@ -168,6 +106,8 @@
     <div class="p-3 footer text-lowercase fs-5">School's website</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="product.js"></script>
+    <script src="products-render.js"></script>
     <script src="skrypt.js"></script>
 </body>
 </html>
