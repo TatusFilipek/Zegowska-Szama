@@ -68,9 +68,77 @@
         </div>
 
         <!-- Content -->
-        <div id="checkout-content" class="text-center" style="width: 100%; max-width: 650px;">
-            <h2 class="display-5 fw-bold mb-4 text-start pb-1 ps-1" style="color: #2e3d52; border-bottom: 1px solid #2e3d52;">Your order</h2>
+        <div id="checkout-content" style="width: 100%; max-width: 650px;">
+            <h2 class="fw-bold mb-4 text-start pb-2 ps-1" style="color: #2e3d52; border-bottom: 1px solid #2e3d52; font-size: 2rem;">Your order</h2>
             
+            <div class="order-table-container">
+                <div class="order-table-header" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #ddd; color: #a0a0b0; font-size: 0.9rem; font-weight: 500; text-transform: uppercase;">
+                    <div>Name</div>
+                    <div>count</div>
+                    <div>price</div>
+                    <div></div>
+                </div>
+
+                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
+                    <div style="color: #2e3d52;">Product 1</div>
+                    <div style="color: #a0a0b0;">1x</div>
+                    <div style="color: #a0a0b0;">0.99$</div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
+                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
+                    </div>
+                </div>
+
+                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
+                    <div style="color: #2e3d52;">Product 2</div>
+                    <div style="color: #a0a0b0;">2x</div>
+                    <div style="color: #a0a0b0;">0.99$</div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
+                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
+                    </div>
+                </div>
+
+                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
+                    <div style="color: #2e3d52;">Product 3</div>
+                    <div style="color: #a0a0b0;">4x</div>
+                    <div style="color: #a0a0b0;">0.99$</div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
+                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
+                    </div>
+                </div>
+
+                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
+                    <div style="color: #2e3d52;">Product 4</div>
+                    <div style="color: #a0a0b0;">8x</div>
+                    <div style="color: #a0a0b0;">0.99$</div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
+                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
+                    </div>
+                </div>
+
+                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
+                    <div style="color: #2e3d52;">Product 5</div>
+                    <div style="color: #a0a0b0;">16x</div>
+                    <div style="color: #a0a0b0;">0.99$</div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
+                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: center; align-items: center; padding: 1.5rem 0; color: #a0a0b0;">
+                <span style="margin-right: 1rem;">Total price:</span>
+                <span style="font-size: 1.6rem; font-weight: bold; color: #2e3d52;">5.99$</span>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: .25rem;">
+                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Order</button>
+                <button style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
+            </div>
         </div>
     </div>
 
