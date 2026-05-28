@@ -7,13 +7,41 @@
     <link rel="stylesheet" href="styl.css">
 </head>
 <body class="vh-100 d-flex flex-column">
-<?php require_once __DIR__ . '/header.php'; ?>
+<?php
+require_once __DIR__ . '/header.php';
+require_once __DIR__ . '/db.php';
 
+if (empty($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+$stmt = $conn->prepare('
+    SELECT u.id, u.name, u.email, u.created_at, r.name as role_name
+    FROM users u
+    LEFT JOIN roles r ON u.role_id = r.id
+    WHERE u.id = ? LIMIT 1
+');
+$stmt->execute([$userId]);
+$user = $stmt->fetch();
+
+if (!$user) {
+    header('Location: login.php');
+    exit;
+}
+
+$userName = htmlspecialchars($user['name']);
+$userEmail = htmlspecialchars($user['email']);
+$userRole = htmlspecialchars($user['role_name'] ?? 'N/A');
+$userJoined = htmlspecialchars(date('d-m-Y', strtotime($user['created_at'])));
+?>
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-inline d-md-none">
         
         <div class="text-center my-4">
                 <h1 class="display-4 mb-0" style="color: #8da382; font-weight: 300; font-family: sans-serif;">Welcome</h1>
-                <h2 class="display-5 fw-bold offset-2" style="color: #2e3d52;">Krzysiek</h2>
+                <h2 class="display-5 fw-bold offset-2" style="color: #2e3d52;"><?= $userName ?></h2>
         </div>
 
         <div class="mb-5">
@@ -22,15 +50,15 @@
             <div class="mt-3">
                 <div class="row py-2 fs-5 align-items-center">
                     <div class="col-2 text-muted">Email:</div>
-                    <div class="col-10 fw-bold" style="color: #2e3d52; word-break: break-all;">nowymineraft2@gmail.com</div>
+                    <div class="col-10 fw-bold" style="color: #2e3d52; word-break: break-all;"><?= $userEmail ?></div>
                 </div>
                 <div class="row py-2 fs-5 align-items-center">
                     <div class="col-2 text-muted">Role:</div>
-                    <div class="col-10 fw-bold" style="color: #2e3d52;">Admin</div>
+                    <div class="col-10 fw-bold" style="color: #2e3d52;"><?= $userRole ?></div>
                 </div>
                 <div class="row py-2 fs-5 align-items-center">
                     <div class="col-2 text-muted">Joined:</div>
-                    <div class="col-10 fw-bold" style="color: #2e3d52;">november 9 year 2026</div>
+                    <div class="col-10 fw-bold" style="color: #2e3d52;"><?= $userJoined ?></div>
                 </div>
             </div>
         </div>
@@ -45,6 +73,14 @@
                             style="background-color: #3b4257; color: #a2a2bd; border: none; min-width: 140px;">
                         Normal
                     </button>
+                </div>
+            </div>
+
+            <div class="row mt-4 py-2 fs-5 align-items-center">
+                <div class="col-12">
+                    <a href="logout.php" class="btn btn-danger w-100 py-2 fw-semibold rounded-2">
+                        Logout
+                    </a>
                 </div>
             </div>
         </div>
@@ -62,7 +98,7 @@
                 <div class="d-flex justify-content-center gap-5">
                     <div class="text-end my-5 mx-4">
                         <h1 class="display-4 mb-0" style="color: #8da382; font-weight: 300; font-family: sans-serif;">Welcome</h1>
-                        <h2 class="display-5 fw-bold offset-4" style="color: #2e3d52;">Krzysiek</h2>
+                        <h2 class="display-5 fw-bold offset-4" style="color: #2e3d52;"><?= $userName ?></h2>
                     </div>
 
                     <h1 class="display-1 fw-bold promo-text py-4 m-0 mx-3">
@@ -79,15 +115,15 @@
                 <div class="mt-3">
                     <div class="row py-2 fs-5 align-items-center">
                         <div class="col-2 text-muted">Email:</div>
-                        <div class="col-10 fw-bold" style="color: #2e3d52; word-break: break-all;">nowymineraft2@gmail.com</div>
+                        <div class="col-10 fw-bold" style="color: #2e3d52; word-break: break-all;"><?= $userEmail ?></div>
                     </div>
                     <div class="row py-2 fs-5 align-items-center">
                         <div class="col-2 text-muted">Role:</div>
-                        <div class="col-10 fw-bold" style="color: #2e3d52;">Admin</div>
+                        <div class="col-10 fw-bold" style="color: #2e3d52;"><?= $userRole ?></div>
                     </div>
                     <div class="row py-2 fs-5 align-items-center">
                         <div class="col-2 text-muted">Joined:</div>
-                        <div class="col-10 fw-bold" style="color: #2e3d52;">november 9 year 2026</div>
+                        <div class="col-10 fw-bold" style="color: #2e3d52;"><?= $userJoined ?></div>
                     </div>
                 </div>
             </div>
@@ -102,6 +138,14 @@
                                 style="background-color: #3b4257; color: #a2a2bd; border: none; min-width: 140px;">
                             Normal
                         </button>
+                    </div>
+                </div>
+
+                <div class="row mt-4 py-2 fs-5 align-items-center">
+                    <div class="col-12">
+                        <a href="logout.php" class="btn btn-danger w-100 py-2 fw-semibold rounded-2">
+                            Logout
+                        </a>
                     </div>
                 </div>
             </div>
