@@ -3,12 +3,19 @@ require_once __DIR__ . '/db.php';
 
 // Fetch products
 try {
-    $stmt = $conn->query('SELECT id, name, category, picture, price_cents, COALESCE(discount_percent,0) AS discount_percent FROM products ORDER BY id');
+    $stmt = $conn->query('SELECT id, name, category, picture, price_cents, COALESCE(discount_percent,0) AS discount_percent FROM products ORDER BY category, name');
     $products = $stmt->fetchAll();
+    $productsByCategory = [];
+    foreach ($products as $product) {
+        $category = $product['category'] ?: 'Brak kategorii';
+        $productsByCategory[$category][] = $product;
+    }
 } catch (Exception $e) {
     $products = [];
+    $productsByCategory = [];
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -55,21 +62,26 @@ try {
         </div>
 
         <div class="mb-5 position-relative category-section">
-            <h2 class="display-6 border-bottom pb-2" style="color: #4a5568; border-color: #3b4257 !important;">Category</h2>
-
             <div class="position-relative">
-                <div class="d-flex overflow-x-auto flex-nowrap gap-3 scroll-container pe-5">
-<?php foreach ($products as $p): ?>
-    <div style="min-width: 120px;">
-        <div class="fw-bold text-dark mb-0"><?= htmlspecialchars($p['name']) ?></div>
-        <small class="d-block text-success mb-2" style="font-size: 0.75rem;"><?php echo (int)$p['discount_percent']; ?>% OFF!</small>
+                <div class="d-flex flex-column gap-4">
+<?php foreach ($productsByCategory as $category => $items): ?>
+                    <div>
+                        <div class="display-6 border-bottom pb-2 mb-3" style="color: #4a5568; border-color: #3b4257 !important;"><?= htmlspecialchars($category) ?></div>
+                        <div class="d-flex overflow-x-auto flex-nowrap gap-3 scroll-container pe-5">
+<?php foreach ($items as $p): ?>
+                            <div style="min-width: 120px;">
+                                <div class="fw-bold text-dark mb-0"><?= htmlspecialchars($p['name']) ?></div>
+                                <small class="d-block text-success mb-2" style="font-size: 0.75rem;"><?= (int)$p['discount_percent'] ?>% OFF!</small>
 <?php if (!empty($p['picture']) && file_exists(__DIR__ . '/../design/photos/' . $p['picture'])): ?>
-        <img src="../design/photos/<?= rawurlencode($p['picture']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" class="rounded" style="width:100%; aspect-ratio:1/1; object-fit:cover; background-color:#3b4257;">
+                                <img src="../design/photos/<?= rawurlencode($p['picture']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" class="rounded" style="width:100%; aspect-ratio:1/1; object-fit:cover; background-color:#3b4257;">
 <?php else: ?>
-        <div class="rounded bg-secondary" style="width: 100%; aspect-ratio: 1/1; background-color: #3b4257 !important;"></div>
+                                <div class="rounded bg-secondary" style="width: 100%; aspect-ratio: 1/1; background-color: #3b4257 !important;"></div>
 <?php endif; ?>
-        <div class="mt-2 text-muted text-center fw-semibold"><?php echo number_format($p['price_cents']/100, 2, '.', ''); ?>$</div>
-    </div>
+                                <div class="mt-2 text-muted text-center fw-semibold"><?= number_format($p['price_cents']/100, 2, '.', '') ?>$</div>
+                            </div>
+<?php endforeach; ?>
+                        </div>
+                    </div>
 <?php endforeach; ?>
                 </div>
 
@@ -110,23 +122,28 @@ try {
         </div>
 
         <div class="mb-5 position-relative category-section px-4">
-            <h2 class="display-6 border-bottom pb-2" style="color: #4a5568; border-color: #3b4257 !important;">Category</h2>
-
-            <div class="position-relative">
-                <div class="d-flex overflow-x-auto flex-nowrap gap-5 scroll-container pe-5">
-<?php foreach ($products as $p): ?>
-    <div class="d-flex gap-3" style="min-width: 240px; min-height: 120px;">
-        <?php if (!empty($p['picture']) && file_exists(__DIR__ . '/../design/photos/' . $p['picture'])): ?>
-            <img src="../design/photos/<?= rawurlencode($p['picture']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" class="rounded" style="width: 120px; height: 120px; object-fit: cover; background-color: #3b4257;">
-        <?php else: ?>
-            <div class="rounded bg-secondary" style="width: 120px; height: 120px; background-color: #3b4257 !important;"></div>
-        <?php endif; ?>
-        <div>
-            <div class="fw-bold text-dark mb-0 fs-3"><?= htmlspecialchars($p['name']) ?></div>
-            <small class="d-block text-success mb-2 fs-6"><?= (int)$p['discount_percent'] ?>% OFF!</small>
-            <div class="mt-2 text-muted fw-semibold fs-3"><?= number_format($p['price_cents']/100, 2, '.', '') ?>$</div>
-        </div>
-    </div>
+            <div class="position-relative pt-3">
+                <div class="d-flex flex-column gap-5">
+<?php foreach ($productsByCategory as $category => $items): ?>
+                    <div>
+                        <div class="display-6 border-bottom pb-2 mb-4" style="color: #4a5568; border-color: #3b4257 !important;"><?= htmlspecialchars($category) ?></div>
+                        <div class="d-flex overflow-x-auto flex-nowrap gap-5 scroll-container pe-5">
+<?php foreach ($items as $p): ?>
+                            <div class="d-flex gap-3" style="min-width: 240px; min-height: 120px;">
+                                <?php if (!empty($p['picture']) && file_exists(__DIR__ . '/../design/photos/' . $p['picture'])): ?>
+                                    <img src="../design/photos/<?= rawurlencode($p['picture']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" class="rounded" style="width: 120px; height: 120px; object-fit: cover; background-color: #3b4257;">
+                                <?php else: ?>
+                                    <div class="rounded bg-secondary" style="width: 120px; height: 120px; background-color: #3b4257 !important;"></div>
+                                <?php endif; ?>
+                                <div>
+                                    <div class="fw-bold text-dark mb-0 fs-3"><?= htmlspecialchars($p['name']) ?></div>
+                                    <small class="d-block text-success mb-2 fs-6"><?= (int)$p['discount_percent'] ?>% OFF!</small>
+                                    <div class="mt-2 text-muted fw-semibold fs-3"><?= number_format($p['price_cents']/100, 2, '.', '') ?>$</div>
+                                </div>
+                            </div>
+<?php endforeach; ?>
+                        </div>
+                    </div>
 <?php endforeach; ?>
                 </div>
                 
