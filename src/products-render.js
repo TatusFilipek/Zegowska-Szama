@@ -8,12 +8,60 @@
     function imageUrl(picture) {
         if (!picture) return '';
         if (/^https?:\/\//i.test(picture)) return picture;
-        // if path contains a slash, use as-is
         if (picture.indexOf('/') !== -1) return picture;
-        // if filename already has .png extension, point to photos/<name.png>
         if (/\.png$/i.test(picture)) return 'photos/' + picture;
-        // otherwise point to local photos folder with added .png
         return 'photos/' + picture + '.png';
+    }
+
+    function getCart() {
+        const stored = localStorage.getItem('zegowskaCart');
+        if (!stored) return [];
+        try {
+            return JSON.parse(stored) || [];
+        } catch (err) {
+            return [];
+        }
+    }
+
+    function saveCart(cart) {
+        localStorage.setItem('zegowskaCart', JSON.stringify(cart));
+    }
+
+    function showCartToast(productName) {
+        const toast = document.createElement('div');
+        toast.textContent = `${productName} dodano do koszyka.`;
+        toast.style.position = 'fixed';
+        toast.style.right = '20px';
+        toast.style.bottom = '20px';
+        toast.style.padding = '12px 16px';
+        toast.style.background = 'rgba(0, 0, 0, 0.8)';
+        toast.style.color = 'white';
+        toast.style.borderRadius = '12px';
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+        toast.style.zIndex = '9999';
+        toast.style.fontSize = '0.95rem';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.2s ease';
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+        });
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 1800);
+    }
+
+    function addProductToCart(productId, productName) {
+        const cart = getCart();
+        const entry = cart.find(item => item.id === productId);
+        if (entry) {
+            entry.quantity += 1;
+        } else {
+            cart.push({ id: productId, quantity: 1 });
+        }
+        saveCart(cart);
+        if (productName) showCartToast(productName);
     }
 
     function groupByCategory(products) {
@@ -64,7 +112,7 @@
 
                 const inner = `
                     <div style="width: 120px; height: 120px; overflow: hidden;">
-                        <img src="${imageUrl(p.picture)}" style="width: 120px; height: 120px; object-fit: cover; background-color: #3b4257; border-radius: 0.375rem;" alt="${p.name}">
+                        <img src="${imageUrl(p.picture)}" style="width: 120px; height: 120px; object-fit: cover; background-color: #3b4257; border-radius: 0.375rem; cursor: pointer;" alt="${p.name}">
                     </div>
                     <div>
                         <div class="fw-bold text-dark mb-0 fs-3">${p.name}</div>
@@ -73,7 +121,19 @@
                     </div>
                 `;
 
+                item.title="Dodaj do koszyka"
                 item.innerHTML = inner;
+
+                // STARA WERSJA (tylko na obrazek):
+                // const img = item.querySelector('img');
+                // if (img) {
+                //     img.addEventListener('click', () => addProductToCart(p.id, p.name));
+                // }
+
+                // NOWA WERSJA (kliknięcie w dowolne miejsce kafelka):
+                item.style.cursor = 'pointer'; // Opcjonalnie: zmienia kursor na rączkę przy najechaniu na kafelek
+                item.addEventListener('click', () => addProductToCart(p.id, p.name));
+
                 row.appendChild(item);
             });
             
@@ -140,7 +200,7 @@
 
                 const inner = `
                     <div style="width: 100%; height: 120px; overflow: hidden; flex-shrink: 0;">
-                        <img src="${imageUrl(p.picture)}" style="width:100%; height:100%; object-fit:cover; background-color: #3b4257;" alt="${p.name}">
+                        <img src="${imageUrl(p.picture)}" style="width:100%; height:100%; object-fit:cover; background-color: #3b4257; cursor: pointer;" alt="${p.name}">
                     </div>
                     <div style="height: 80px; display: flex; flex-direction: column; justify-content: space-between; padding-top: 8px;">
                         <div class="fw-bold text-dark mb-0" style="font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2;">${p.name}</div>
@@ -149,8 +209,20 @@
                     </div>
                 `;
 
+                item.title="Dodaj do koszyka"
                 item.innerHTML = inner;
-                scroller.appendChild(item);
+
+                // STARA WERSJA (tylko na obrazek):
+                // const img = item.querySelector('img');
+                // if (img) {
+                //     img.addEventListener('click', () => addProductToCart(p.id, p.name));
+                // }
+
+                // NOWA WERSJA (kliknięcie w dowolne miejsce kafelka):
+                item.style.cursor = 'pointer'; // Opcjonalnie: zmienia kursor na rączkę przy najechaniu na kafelek
+                item.addEventListener('click', () => addProductToCart(p.id, p.name));
+
+                row.appendChild(item);
             });
 
             const arrowLeft = document.createElement('div');
