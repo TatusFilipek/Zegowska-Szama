@@ -9,9 +9,10 @@ $userId = $loggedIn ? (int)$_SESSION['user_id'] : null;
 
 // Dane połączenia z bazą danych
 $host = 'localhost';
-$db   = 'szama';
+$db = 'szama';
 $user = 'root';
 $pass = '';
+
 $charset = 'utf8mb4';
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 
@@ -120,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zegowska Szama - Koszyk</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">

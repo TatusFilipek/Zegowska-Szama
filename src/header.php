@@ -12,13 +12,13 @@ $isAdmin = $loggedIn && isset($_SESSION['role_id']) && (int)$_SESSION['role_id']
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <div class="header text-lowercase fs-4 d-flex align-items-center gap-4 dropdown p-2 ps-3">
     <div class="my-auto">
-        <a href="main.php"><img src="../design/photos/zeg-icon.png" style="width: 55px;"></a>
+        <a href="main.php"><img src="./photos/zeg-icon.png" style="width: 55px;"></a>
     </div>
     <div class="my-auto flex-fill fs-3">
         <a href="main.php">Szama</a>
     </div>
 
-    <div class="d-none d-md-flex gap-5 my-auto fs-3 me-3">
+    <div class="d-none d-md-flex gap-5 my-auto fs-3 me-3" style="overflow: hidden;">
 <?php if ($loggedIn): ?>
         <a class="text-capitalize" href="profile.php">Profil</a>
         <a class="text-capitalize" href="checkout.php">Koszyk</a>
@@ -34,7 +34,7 @@ $isAdmin = $loggedIn && isset($_SESSION['role_id']) && (int)$_SESSION['role_id']
     </div>
     
     <div class="my-auto d-md-none" data-bs-toggle="dropdown" aria-expanded="false">
-        <img class="btn bi bi-list m-0 p-0" src="../design/photos/burger.png" style="width: 55px;">
+        <img class="btn bi bi-list m-0 p-0" src="./photos/burger.png" style="width: 55px;">
     </div>
     <ul class="row dropdown-menu custom-dropdown-menu w-100 mt-1 p-0 d-md-none">
 <?php if ($loggedIn): ?>

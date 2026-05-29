@@ -156,6 +156,21 @@ textarea:focus {
     outline: none;
 }
 
+/* Gdy ekran ma 768px szerokości lub mniej (tablety i smartfony) */
+@media (max-width: 768px) {
+    .tab-btn {
+        font-size: 0.95rem; /* Zmniejszony tekst */
+        padding: 8px 0;    /* Przy okazji warto też zmniejszyć padding na małe ekrany */
+    }
+}
+
+/* Gdy ekran ma 480px szerokości lub mniej (małe smartfony) */
+@media (max-width: 480px) {
+    .tab-btn {
+        font-size: 0.85rem; /* Jeszcze mniejszy tekst */
+    }
+}
+
 /* Efekt najechania myszką */
 .tab-btn:hover {
     color: #2e3d52;

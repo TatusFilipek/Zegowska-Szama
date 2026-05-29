@@ -1,9 +1,9 @@
 <?php
 // Database connection configuration
-$host = 'localhost';
-$database = 'szama';
-$user = 'root';
-$password = '';
+$host = 'sql313.infinityfree.com';
+$database = 'if0_42050554_szama';
+$user = 'if0_42050554';
+$password = 'nU2ceqtTyfwBl';
 
 // DSN (Data Source Name) for MySQL
 $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";

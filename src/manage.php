@@ -9,7 +9,7 @@ if (!isset($_SESSION['role_id']) || (int)$_SESSION['role_id'] !== 1) {
 }
 
 $host = 'localhost';
-$db   = 'szama';
+$db = 'szama';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
@@ -167,6 +167,7 @@ if (isset($_GET['action'])) {
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zegowska Szama - Zarządzaj</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">
@@ -208,6 +209,21 @@ if (isset($_GET['action'])) {
             text-align: center;
             transition: all 0.2s ease;
             outline: none;
+        }
+        
+        /* Gdy ekran ma 768px szerokości lub mniej (tablety i smartfony) */
+        @media (max-width: 768px) {
+            .tab-btn {
+                font-size: 0.95rem; /* Zmniejszony tekst */
+                padding: 8px 0;    /* Przy okazji warto też zmniejszyć padding na małe ekrany */
+            }
+        }
+
+        /* Gdy ekran ma 480px szerokości lub mniej (małe smartfony) */
+        @media (max-width: 480px) {
+            .tab-btn {
+                font-size: 0.75rem; /* Jeszcze mniejszy tekst */
+            }
         }
 
         .tab-btn:hover {
