@@ -310,6 +310,12 @@
         }
     }
 
+    // WYSTAWIENIE FUNKCJI DO OKNA GLOBALNEGO DLA SYNCHRONIZACJI WYSZUKIWARKI
+    window.Product = Product;
+    window.renderDesktop = renderDesktop;
+    window.renderMobile = renderMobile;
+    window.groupByCategory = groupByCategory;
+
     // expose for debugging
     window.ProductsRenderer = { loadAndRender };
 

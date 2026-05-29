@@ -39,7 +39,8 @@ if (isset($_GET['action'])) {
         }
         
         if ($action === 'get_products') {
-            $stmt = $pdo->query("SELECT id, name, category, price_cents, discount_percent, stock FROM products ORDER BY id DESC");
+            // ZAKTUALIZOWANE: Dodano pole 'picture' do zapytania SQL
+            $stmt = $pdo->query("SELECT id, name, category, price_cents, discount_percent, stock, picture FROM products ORDER BY id DESC");
             echo json_encode($stmt->fetchAll());
             exit;
         }
@@ -74,12 +75,13 @@ if (isset($_GET['action'])) {
             }
 
             if ($action === 'save_product') {
+                // ZAKTUALIZOWANE: Obsługa zapisywania/aktualizowania kolumny 'picture' z formularza
                 if (!empty($input['id'])) {
-                    $stmt = $pdo->prepare("UPDATE products SET name = ?, category = ?, price_cents = ?, discount_percent = ?, stock = ? WHERE id = ?");
-                    $stmt->execute([$input['name'], $input['category'], $input['price_cents'], $input['discount_percent'], $input['stock'], $input['id']]);
+                    $stmt = $pdo->prepare("UPDATE products SET name = ?, category = ?, price_cents = ?, discount_percent = ?, stock = ?, picture = ? WHERE id = ?");
+                    $stmt->execute([$input['name'], $input['category'], $input['price_cents'], $input['discount_percent'], $input['stock'], $input['picture'], $input['id']]);
                 } else {
-                    $stmt = $pdo->prepare("INSERT INTO products (name, category, price_cents, discount_percent, stock, picture) VALUES (?, ?, ?, ?, ?, 'default.png')");
-                    $stmt->execute([$input['name'], $input['category'], $input['price_cents'], $input['discount_percent'], $input['stock']]);
+                    $stmt = $pdo->prepare("INSERT INTO products (name, category, price_cents, discount_percent, stock, picture) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$input['name'], $input['category'], $input['price_cents'], $input['discount_percent'], $input['stock'], $input['picture']]);
                 }
                 echo json_encode(['success' => true]);
                 exit;
@@ -157,7 +159,6 @@ if (isset($_GET['action'])) {
             opacity: 1;
         }
 
-        /* STYLIZACJA AKTYWNYCH INPUTÓW W CAŁYM PROJEKCIE */
         input:focus, textarea:focus {
             color: #ffffff !important;
             background-color: #434b63 !important;
@@ -165,7 +166,6 @@ if (isset($_GET['action'])) {
             box-shadow: 0 0 5px rgba(90, 142, 122, 0.5);
         }
 
-        /* KONTENER DLA MENU ZAKŁADEK (WYGLĄD BELKI ZE ZDJĘCIA) */
         .tabs-container {
             display: flex;
             align-items: center;
@@ -205,7 +205,6 @@ if (isset($_GET['action'])) {
             font-weight: 700 !important;
         }
 
-        /* MODALE OVERLAY */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
@@ -261,7 +260,7 @@ if (isset($_GET['action'])) {
         <div class="px-4 py-3">
             <div id="orders" class="tab-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">Orders</h3>
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">orders</h3>
                     <button class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">Complete</button>
                 </div>
                 <div style="overflow-x: auto;">
@@ -283,7 +282,7 @@ if (isset($_GET['action'])) {
 
             <div id="products" class="tab-content d-none">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">Products</h3>
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">products</h3>
                     <button type="button" onclick="openNewProductModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">New Product</button>
                 </div>
                 <div style="overflow-x: auto;" class="mb-5">
@@ -307,7 +306,12 @@ if (isset($_GET['action'])) {
                         <form id="product-form">
                             <h5 class="fw-bold mb-4" style="color: #2e3d52;" id="form-product-title">Add / Edit Product</h5>
                             <input type="hidden" id="prod-id">
-                            <div style="width: 120px; height: 120px; background-color: #3b4257; border-radius: 8px; margin-bottom: 1rem;"></div>
+                            
+                            <div class="mb-3">
+                                <label style="color: #2e3d52; font-weight: 600;">Picture Name</label>
+                                <input type="text" id="prod-picture" class="form-control darkColor" placeholder="nazwa obrazka" style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
+                            </div>
+
                             <div class="mb-3">
                                 <label style="color: #2e3d52; font-weight: 600;">Name</label>
                                 <input type="text" id="prod-name" class="form-control darkColor" placeholder="text..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
@@ -343,7 +347,7 @@ if (isset($_GET['action'])) {
 
             <div id="offers" class="tab-content d-none">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">Offers</h3>
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">offers</h3>
                     <button type="button" onclick="openNewOfferModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">New Offer</button>
                 </div>
                 <div style="overflow-x: auto;" class="mb-5">

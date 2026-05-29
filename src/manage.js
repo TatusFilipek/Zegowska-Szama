@@ -83,21 +83,25 @@
             const res = await fetch(`${API_URL}?action=get_products`);
             const products = await res.json();
 
-            tbody.innerHTML = products.map(p => `
-                <tr style="color: #2e3d52; vertical-align: middle;">
-                    <td class="fw-bold">${p.name}</td>
-                    <td style="color: #8b8b9e;">${p.category}</td>
-                    <td>${p.stock} pcs</td>
-                    <td style="color: #5a8e7a; font-weight: 600;">${formatPrice(p.price_cents)}</td>
-                    <td>
-                        <button class="btn btn-sm fw-semibold px-3 py-1 rounded-2" 
-                                onclick="selectProductForEdit(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${p.category.replace(/'/g, "\\'")}', ${p.stock}, ${p.price_cents}, ${p.discount_percent || 0})" 
-                                style="background-color: #5a8e7a; color: white; border: none;">
-                            Select
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            // ZAKTUALIZOWANE: Przekazujemy również 'picture' do funkcji selectProductForEdit
+            tbody.innerHTML = products.map(p => {
+                const pictureEscaped = (p.picture || 'default.png').replace(/'/g, "\\'");
+                return `
+                    <tr style="color: #2e3d52; vertical-align: middle;">
+                        <td class="fw-bold">${p.name}</td>
+                        <td style="color: #8b8b9e;">${p.category}</td>
+                        <td>${p.stock} pcs</td>
+                        <td style="color: #5a8e7a; font-weight: 600;">${formatPrice(p.price_cents)}</td>
+                        <td>
+                            <button class="btn btn-sm fw-semibold px-3 py-1 rounded-2" 
+                                    onclick="selectProductForEdit(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${p.category.replace(/'/g, "\\'")}', ${p.stock}, ${p.price_cents}, ${p.discount_percent || 0}, '${pictureEscaped}')" 
+                                    style="background-color: #5a8e7a; color: white; border: none;">
+                                Select
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         } catch (e) {
             tbody.innerHTML = `<tr><td colspan="5" class="text-danger text-center">Błąd pobierania bazy produktów.</td></tr>`;
         }
@@ -106,19 +110,25 @@
     window.openNewProductModal = function () {
         document.getElementById('product-form').reset();
         document.getElementById('prod-id').value = '';
+        
+        // ZAKTUALIZOWANE: Domyślna wartość dla nowo tworzonego produktu
+        document.getElementById('prod-picture').value = 'default.png';
+
         document.getElementById('form-product-title').textContent = 'Create New Product';
         document.getElementById('prod-submit-btn').textContent = 'Create';
         document.getElementById('prod-submit-btn').style.backgroundColor = '#5a8e7a';
         document.getElementById('product-modal').classList.add('show');
     };
 
-    window.selectProductForEdit = function (id, name, category, stock, price, discount) {
+    // ZAKTUALIZOWANE: Obsługa parametru 'picture' w oknie edycji
+    window.selectProductForEdit = function (id, name, category, stock, price, discount, picture) {
         document.getElementById('prod-id').value = id;
         document.getElementById('prod-name').value = name;
         document.getElementById('prod-category').value = category;
         document.getElementById('prod-stock').value = stock;
         document.getElementById('prod-price').value = price;
         document.getElementById('prod-discount').value = discount;
+        document.getElementById('prod-picture').value = picture || 'default.png';
 
         document.getElementById('form-product-title').textContent = `Edit Product (ID: #${id})`;
         document.getElementById('prod-submit-btn').textContent = 'Save Changes';
@@ -138,13 +148,15 @@
         e.preventDefault();
         const idVal = document.getElementById('prod-id').value;
 
+        // ZAKTUALIZOWANE: Dodano zbieranie wartości 'picture' z inputu tekstowego
         const payload = {
             id: idVal ? parseInt(idVal, 10) : null,
             name: document.getElementById('prod-name').value,
             category: document.getElementById('prod-category').value,
             stock: parseInt(document.getElementById('prod-stock').value, 10),
             price_cents: parseInt(document.getElementById('prod-price').value, 10),
-            discount_percent: parseInt(document.getElementById('prod-discount').value, 10)
+            discount_percent: parseInt(document.getElementById('prod-discount').value, 10),
+            picture: document.getElementById('prod-picture').value
         };
 
         try {
@@ -163,7 +175,7 @@
         }
     });
 
-    // --- ZAKŁADKA: OFFERS (ZARZĄDZANIE SKŁADEM ZESTAWU) ---
+    // --- ZAKŁADKA: OFFERS ---
     let globalProductsCache = [];
 
     async function fetchProductsToCache() {

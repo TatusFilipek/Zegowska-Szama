@@ -28,12 +28,11 @@ try {
 </head>
 <body class="vh-100 d-flex flex-column">
 <?php require_once __DIR__ . '/header.php'; ?>
-    <!-- mobile -->
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-md-none d-inline">
         
         <div class="d-flex gap-3 mb-4">
             <div class="text-capitalize px-4 pe-5 py-2 text-start fw-bolder fs-4 darkColor rounded-2" style="border: 0px;">Name</div>
-            <input type="text" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Search..." style="border: 0px; width: 90%;">
+            <input type="text" id="mobile-search" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Search..." style="border: 0px; width: 90%;">
         </div>
 
         <div class="mb-5">
@@ -41,7 +40,6 @@ try {
         </div>
     </div>
 
-    <!-- normal -->
     <div class="flex-fill container-fluid overflow-auto d-none d-md-block m-0 p-0">
         <div class="promo-banner overflow-hidden position-relative">
             <div class="text-center mx-auto" style="width: 100%;">
@@ -58,7 +56,7 @@ try {
 
             <div class="d-flex gap-3 mb-4 mx-auto" style="width: 70%;">
                 <div class="text-capitalize px-4 pe-5 py-2 text-start fw-bolder fs-4 darkColor rounded-2" style="border: 0px;">Name</div>
-                <input type="text" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Search..." style="border: 0px; width: 90%;">
+                <input type="text" id="desktop-search" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Search..." style="border: 0px; width: 90%;">
             </div>
         </div>
 
@@ -70,6 +68,81 @@ try {
     <div class="p-3 footer text-lowercase fs-5">School's website</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Przekazujemy stan sesji do skryptu JS
+        window.isUserLoggedIn = <?php echo $loggedIn ? 'true' : 'false'; ?>;
+
+        (function() {
+            // Surowe dane pobrane z bazy PHP
+            const rawProducts = <?php echo json_encode($products); ?>;
+
+            function performSearch(queryText) {
+                const query = queryText.toLowerCase().trim();
+
+                // 1. Filtrowanie surowej bazy danych na podstawie wpisanej frazy
+                const filteredRaw = rawProducts.filter(p => {
+                    const nameMatch = p.name ? p.name.toLowerCase().includes(query) : false;
+                    const categoryMatch = p.category ? p.category.toLowerCase().includes(query) : false;
+                    return nameMatch || categoryMatch;
+                });
+
+                // 2. Bezpieczna weryfikacja czy wyeksponowane z pliku js funkcje są już gotowe
+                if (typeof window.Product === 'function' && typeof window.groupByCategory === 'function') {
+                    
+                    // Konwersja surowych obiektów na pełnoprawne instancje klasy Product
+                    const productInstances = filteredRaw.map(r => new window.Product(r));
+                    
+                    // Grupowanie produktów przy użyciu oryginalnej logiki mapowania kategorii
+                    const groupedMap = window.groupByCategory(productInstances);
+
+                    // 3. Renderowanie widoków dokładnie w tym samym formacie
+                    if (typeof window.renderDesktop === 'function') {
+                        window.renderDesktop(groupedMap);
+                    }
+                    if (typeof window.renderMobile === 'function') {
+                        window.renderMobile(groupedMap);
+                    }
+
+                    // Przywrócenie działania strzałek przewijania (jeżeli funkcja istnieje w skrypt.js)
+                    if (typeof window.initializeScrollButtons === 'function') {
+                        window.initializeScrollButtons();
+                    }
+
+                    // Obsługa braku wyników wyszukiwania
+                    if (filteredRaw.length === 0) {
+                        const noResultsHtml = '<div class="text-center py-5 fs-4 text-muted">No products found matching your search.</div>';
+                        const dContainer = document.getElementById('desktop-categories');
+                        const mContainer = document.getElementById('mobile-categories');
+                        if (dContainer) dContainer.innerHTML = noResultsHtml;
+                        if (mContainer) mContainer.innerHTML = noResultsHtml;
+                    }
+                }
+            }
+
+            // Inicjalizacja nasłuchiwania pól tekstowych po załadowaniu drzewa DOM
+            document.addEventListener('DOMContentLoaded', () => {
+                const desktopSearch = document.getElementById('desktop-search');
+                const mobileSearch = document.getElementById('mobile-search');
+
+                if (desktopSearch) {
+                    desktopSearch.addEventListener('input', (e) => {
+                        const val = e.target.value;
+                        if (mobileSearch) mobileSearch.value = val; // Synchronizacja z mobilnym inputem
+                        performSearch(val);
+                    });
+                }
+
+                if (mobileSearch) {
+                    mobileSearch.addEventListener('input', (e) => {
+                        const val = e.target.value;
+                        if (desktopSearch) desktopSearch.value = val; // Synchronizacja z desktopowym inputem
+                        performSearch(val);
+                    });
+                }
+            });
+        })();
+    </script>
 
     <script src="product.js"></script>
     <script src="products-render.js"></script>
