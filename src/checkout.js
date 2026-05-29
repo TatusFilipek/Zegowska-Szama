@@ -222,7 +222,7 @@
             btn.addEventListener('click', () => {
                 if (confirm('Czy chcesz opróżnić koszyk i anulować zamówienie?')) {
                     localStorage.removeItem('zegowskaCart');
-                    window.location.href = 'index.php';
+                    window.location.href = 'checkout.php';
                 }
             });
         });

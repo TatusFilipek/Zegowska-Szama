@@ -237,7 +237,8 @@
                 item.style.display = 'flex';
                 item.style.flexDirection = 'column';
 
-                const originalPrice = centsToPrice(p.price_cents);
+                // POPRAWKA LOGICZNA: Zmieniono p.price_cents na p.getPrice(), tak jak w wersji desktopowej!
+                const originalPrice = centsToPrice(p.getPrice());
                 const discountedPrice = centsToPrice(p.applyDiscount());
                 const priceDisplay = p.discount > 0 
                     ? `<div style="font-size: 0.875rem; font-weight: 500;"><span style="text-decoration: line-through; color: #999; margin-right: 4px;">${originalPrice}</span><span style="color: #dc2626;">${discountedPrice}</span></div>`
@@ -254,20 +255,14 @@
                     </div>
                 `;
 
-                item.title="Dodaj do koszyka"
+                item.title = "Dodaj do koszyka";
                 item.innerHTML = inner;
 
-                // STARA WERSJA (tylko na obrazek):
-                // const img = item.querySelector('img');
-                // if (img) {
-                //     img.addEventListener('click', () => addProductToCart(p.id, p.name));
-                // }
-
-                // NOWA WERSJA (kliknięcie w dowolne miejsce kafelka):
-                item.style.cursor = 'pointer'; // Opcjonalnie: zmienia kursor na rączkę przy najechaniu na kafelek
+                item.style.cursor = 'pointer'; 
                 item.addEventListener('click', () => addProductToCart(p.id, p.name));
 
-                row.appendChild(item);
+                // ABSOLUTNIE PEWNE: Dodajemy do scroller, a nie do nieistniejącego row!
+                scroller.appendChild(item);
             });
 
             const arrowLeft = document.createElement('div');
