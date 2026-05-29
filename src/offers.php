@@ -67,27 +67,40 @@ function calculateDiscount($conn, $offerId, $offerPrice) {
                     ?>
             <div class="col-md-6 mb-5">
                 <div>
-                    <div class="text-center" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; padding: 1rem 0; color: #a0a0b0; font-size: 1.2rem; font-weight: 500; text-transform: uppercase; padding-bottom: 0">
-                        <div><?= htmlspecialchars($offer['name']) ?></div>
-                        <div>$<?= number_format($offer['price'] / 100, 2) ?></div>
-                        <div>count</div>
-                        <div></div>
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                        <div class="fw-bold fs-4 text-truncate" style="color: #2e3d52; max-width: 100%; text-transform: uppercase;">
+                            <?= htmlspecialchars($offer['name']) ?>
+                        </div>
                     </div>
 
-                    <div class="text-center" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; padding: 0.75rem 0; padding-top: 0">
-                        <div class="rounded d-flex flex-column justify-content-end" style="width: 100%; aspect-ratio: 1/1; background-color: #3b4257 !important;">
-                            <div class="mx-auto" style="background-color: #86A77F; width: 60%;"><?= htmlspecialchars($discountPercent) ?>% OFF</div>
+                    <div class="text-start mb-2" style="display: grid; grid-template-columns: 3fr 7fr; gap: 1rem; color: #a0a0b0; text-transform: uppercase;">
+                        <div class="fs-5 fw-bold text-start text-truncate" style="color: #2e3d52; max-width: 220px;">
+                            $<?= number_format($offer['price'] / 100, 2) ?>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-end fs-6 fw-medium pb-1">
+                            <span>Produkt</span>
+                            <span>Ilość</span>
+                        </div>
+                    </div>
+
+                    <div class="text-center" style="display: grid; grid-template-columns: 3fr 7fr; gap: 1rem; padding-top: 0">
+                        <div class="rounded d-flex flex-column justify-content-end w-100" style="height: 220px; max-width: 220px; background-color: #3b4257 !important;">
+                            <div class="mx-auto mb-2 py-1 rounded text-truncate" style="background-color: #86A77F; width: 85%; font-size: 0.85rem; font-weight: bold; color: #fff; px-1;">
+                                <?= htmlspecialchars($discountPercent) ?>% OFF
+                            </div>
                         </div>
 
-                        <div class="fs-4">
+                        <div class="fs-4 text-start d-flex flex-column justify-content-start gap-2" style="max-height: 220px; overflow-y: auto;">
                             <?php foreach ($offerProducts as $product): ?>
-                            <div><?= htmlspecialchars($product['name']) ?></div>
-                            <?php endforeach; ?>
-                        </div>
-
-                        <div class="fs-4" style="color: #86A77F;">
-                            <?php foreach ($offerProducts as $product): ?>
-                            <div><?= htmlspecialchars($product['quantity']) ?>x</div>
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-1" style="border-color: rgba(255, 255, 255, 0.15) !important;">
+                                    <span class="text-truncate" style="max-width: 75%;" title="<?= htmlspecialchars($product['name']) ?>">
+                                        <?= htmlspecialchars($product['name']) ?>
+                                    </span>
+                                    <span class="fw-bold" style="color: #86A77F; white-space: nowrap;">
+                                        <?= htmlspecialchars($product['quantity']) ?>x
+                                    </span>
+                                </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
