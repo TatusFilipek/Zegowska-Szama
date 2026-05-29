@@ -33,7 +33,7 @@
         firstTab.classList.add('active-tab');
     }
 
-    // --- ZAKŁADKA: ORDERS ---
+    // --- ZAKŁADKA: ORDERS (ZAKTUALIZOWANA PROGRESJA STATUSÓW) ---
     async function reloadOrders() {
         const tbody = document.getElementById('orders-table-body');
         if (!tbody) return;
@@ -42,35 +42,56 @@
             const res = await fetch(`${API_URL}?action=get_orders`);
             const orders = await res.json();
 
-            tbody.innerHTML = orders.map(o => `
-                <tr style="color: #2e3d52; vertical-align: middle;">
-                    <td>${o.name}</td>
-                    <td style="color: #5a8e7a; font-weight: 600;">${String(o.id).padStart(2, '0')}</td>
-                    <td>
-                        <button class="btn btn-sm rounded-2 me-2" onclick="updateOrderStatus(${o.id}, 3)" style="background-color: #5a8e7a; color: white; border: none; width: 30px; height: 30px;">
-                            <span style="font-size: 0.8rem;">✓</span>
-                        </button>
-                        <button class="btn btn-sm rounded-2" onclick="updateOrderStatus(${o.id}, 0)" style="background-color: #3b4257; color: white; border: none; width: 30px; height: 30px;">
-                            <span style="font-size: 0.8rem;">×</span>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = orders.map(o => {
+                let statusText = '';
+                let buttonHtml = '';
+                const currentStatus = parseInt(o.status, 10) || 0;
+
+                // Mapowanie etapów zamówienia i przypisanie dynamicznych przycisków progresji
+                switch(currentStatus) {
+                    case 1:
+                        statusText = `<span class="badge bg-warning text-dark px-2 py-1">Placed (1)</span>`;
+                        buttonHtml = `<button class="btn btn-sm fw-semibold text-white px-3 py-1 rounded-2" onclick="progressOrderStatus(${o.id})" style="background-color: #5a8e7a; border: none;">Start Preparing ➔</button>`;
+                        break;
+                    case 2:
+                        statusText = `<span class="badge bg-info text-dark px-2 py-1">Preparing (2)</span>`;
+                        buttonHtml = `<button class="btn btn-sm fw-semibold text-white px-3 py-1 rounded-2" onclick="progressOrderStatus(${o.id})" style="background-color: #2e3d52; border: none;">Mark as Ready ➔</button>`;
+                        break;
+                    case 3:
+                        statusText = `<span class="badge bg-success text-white px-2 py-1">Ready to Collect (3)</span>`;
+                        buttonHtml = `<button class="btn btn-sm fw-semibold text-white px-3 py-1 rounded-2" onclick="progressOrderStatus(${o.id})" style="background-color: #3b4257; border: none;">Archive Order ✓</button>`;
+                        break;
+                    default:
+                        statusText = `<span class="badge bg-secondary text-white px-2 py-1">Archived / Done (${currentStatus})</span>`;
+                        buttonHtml = `<button class="btn btn-sm disabled px-3 py-1 rounded-2" style="background-color: #cbd5e1; color: #64748b; border: none;" disabled>Completed</button>`;
+                        break;
+                }
+
+                return `
+                    <tr style="color: #2e3d52; vertical-align: middle;">
+                        <td>${o.name}</td>
+                        <td style="color: #5a8e7a; font-weight: 600;">${String(o.id).padStart(2, '0')}</td>
+                        <td>${statusText}</td>
+                        <td>${buttonHtml}</td>
+                    </tr>
+                `;
+            }).join('');
         } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="3" class="text-danger text-center">Błąd synchronizacji zamówień.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">Błąd synchronizacji zamówień.</td></tr>`;
         }
     }
 
-    window.updateOrderStatus = async function (id, statusNum) {
+    // Nowa funkcja wywoływana przy kliknięciu progresji
+    window.progressOrderStatus = async function (id) {
         try {
             const res = await fetch(`${API_URL}?action=update_order_status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, status: statusNum })
+                body: JSON.stringify({ id })
             });
             if (res.ok) reloadOrders();
         } catch (e) {
-            alert('Wystąpił błąd podczas zmiany statusu.');
+            alert('Wystąpił błąd podczas aktualizacji etapu zamówienia.');
         }
     };
 
@@ -83,7 +104,6 @@
             const res = await fetch(`${API_URL}?action=get_products`);
             const products = await res.json();
 
-            // ZAKTUALIZOWANE: Przekazujemy również 'picture' do funkcji selectProductForEdit
             tbody.innerHTML = products.map(p => {
                 const pictureEscaped = (p.picture || 'default.png').replace(/'/g, "\\'");
                 return `
@@ -110,8 +130,6 @@
     window.openNewProductModal = function () {
         document.getElementById('product-form').reset();
         document.getElementById('prod-id').value = '';
-        
-        // ZAKTUALIZOWANE: Domyślna wartość dla nowo tworzonego produktu
         document.getElementById('prod-picture').value = 'default.png';
 
         document.getElementById('form-product-title').textContent = 'Create New Product';
@@ -120,7 +138,6 @@
         document.getElementById('product-modal').classList.add('show');
     };
 
-    // ZAKTUALIZOWANE: Obsługa parametru 'picture' w oknie edycji
     window.selectProductForEdit = function (id, name, category, stock, price, discount, picture) {
         document.getElementById('prod-id').value = id;
         document.getElementById('prod-name').value = name;
@@ -148,7 +165,6 @@
         e.preventDefault();
         const idVal = document.getElementById('prod-id').value;
 
-        // ZAKTUALIZOWANE: Dodano zbieranie wartości 'picture' z inputu tekstowego
         const payload = {
             id: idVal ? parseInt(idVal, 10) : null,
             name: document.getElementById('prod-name').value,

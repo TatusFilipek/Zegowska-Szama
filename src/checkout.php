@@ -1,3 +1,121 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Sprawdzenie logowania użytkownika
+$loggedIn = !empty($_SESSION['user_id']);
+$userId = $loggedIn ? (int)$_SESSION['user_id'] : null;
+
+// Dane połączenia z bazą danych
+$host = 'localhost';
+$db   = 'szama';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Błąd połączenia z bazą.']);
+    exit;
+}
+
+// --- NOWA OBSŁUGA ZAPYTANIA GET: SPRAWDZANIE STATUSU ---
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'check_status') {
+    header('Content-Type: application/json');
+    
+    $orderId = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
+    if ($orderId <= 0 || !$userId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Nieprawidłowe żądanie.']);
+        exit;
+    }
+
+    // Pobieramy aktualny status zamówienia przypisanego do użytkownika
+    $stmt = $pdo->prepare("SELECT status FROM orders WHERE id = ? AND user_id = ?");
+    $stmt->execute([$orderId, $userId]);
+    $order = $stmt->fetch();
+
+    if ($order) {
+        echo json_encode(['success' => true, 'status' => (int)$order['status']]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Nie znaleziono zamówienia.']);
+    }
+    exit;
+}
+
+// Obsługa zapytań AJAX POST (składanie zamówienia)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'place_order') {
+    header('Content-Type: application/json');
+    
+    if (!$userId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Musisz być zalogowany.']);
+        exit;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $cart = !empty($input['cart']) ? $input['cart'] : [];
+
+    if (empty($cart)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Koszyk jest pusty.']);
+        exit;
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        // Dodanie zamówienia (Krok 1: status = 1)
+        $stmtOrder = $pdo->prepare("INSERT INTO orders (user_id, status) VALUES (?, 1)");
+        $stmtOrder->execute([$userId]);
+        $orderId = $pdo->lastInsertId();
+
+        $stmtProductFetch = $pdo->prepare("SELECT price_cents, COALESCE(discount_percent, 0) AS discount FROM products WHERE id = ?");
+        $stmtOfferFetch   = $pdo->prepare("SELECT price FROM offers WHERE id = ?");
+        
+        $stmtInsertItem  = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, unit_price_snapshot, discount_percent_snapshot) VALUES (?, ?, ?, ?, ?)");
+        $stmtInsertOffer = $pdo->prepare("INSERT INTO order_offers (order_id, offer_id, quantity, unit_price_snapshot) VALUES (?, ?, ?, ?)");
+
+        foreach ($cart as $item) {
+            $itemId = $item['id'];
+            $quantity = (int)$item['quantity'];
+
+            if (is_string($itemId) && strpos($itemId, 'offer_') === 0) {
+                $offerId = (int)str_replace('offer_', '', $itemId);
+                $stmtOfferFetch->execute([$offerId]);
+                $offerData = $stmtOfferFetch->fetch();
+                if ($offerData) {
+                    $stmtInsertOffer->execute([$orderId, $offerId, $quantity, (int)$offerData['price']]);
+                }
+            } else {
+                $productId = (int)$itemId;
+                $stmtProductFetch->execute([$productId]);
+                $productData = $stmtProductFetch->fetch();
+                if ($productData) {
+                    $stmtInsertItem->execute([$orderId, $productId, $quantity, (int)$productData['price_cents'], (int)$productData['discount']]);
+                }
+            }
+        }
+
+        $pdo->commit();
+        echo json_encode(['success' => true, 'order_id' => $orderId]);
+        exit;
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -10,139 +128,64 @@
 <?php require_once __DIR__ . '/header.php'; ?>
 
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-flex flex-column align-items-center">
-        <!-- Progress bar -->
         <div class="mb-2 w-100" style="max-width: 600px;">
             <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex flex-column align-items-center">
-                    <small style="color: #2e3d52;">Checkout</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #5a8e7a; color: white; font-weight: bold;">1</div>
+                <div class="d-flex flex-column align-items-center-step" id="step-icon-1">
+                    <small>Checkout</small>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2 active-circle-step" style="width: 40px; height: 40px; background-color: #5a8e7a; color: white; font-weight: bold;">1</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
                     <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center">
-                    <small style="color: #2e3d52;">Payment</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #37645D; color: white; font-weight: bold;">2</div>
+                <div class="d-flex flex-column align-items-center-step" id="step-icon-2">
+                    <small>Payment</small>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">2</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
-                    <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
+                    <div style="height: 2px; width: 100%; background-color: #3b4257;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center">
-                    <small style="color: #a0a0b0;">Processing</small>
+                <div class="d-flex flex-column align-items-center-step" id="step-icon-3">
+                    <small>Processing</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">3</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
-                    <div style="height: 2px; width: 100%; background-color: #c9a3a3;"></div>
+                    <div style="height: 2px; width: 100%; background-color: #3b4257;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center">
-                    <small style="color: #a0a0b0;">Collect</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #7a7a8e; color: white; font-weight: bold;">4</div>
+                <div class="d-flex flex-column align-items-center-step" id="step-icon-4">
+                    <small>Collect</small>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">4</div>
                 </div>
             </div>
         </div>
 
-        <!-- Content -->
-        <div id="checkout-content" class="content-section vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
-            <h2 class="fw-bold mb-4 text-start pb-2 ps-1" style="color: #2e3d52; border-bottom: 1px solid #2e3d52; font-size: 2rem;">Your order</h2>
-            
-            <div class="order-table-container flex-fill">
-                <div class="order-table-header" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #ddd; color: #a0a0b0; font-size: 0.9rem; font-weight: 500; text-transform: uppercase;">
-                    <div>Name</div>
-                    <div>count</div>
-                    <div>price</div>
-                    <div></div>
-                </div>
-
-                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
-                    <div style="color: #2e3d52;">Product 1</div>
-                    <div style="color: #a0a0b0;">1x</div>
-                    <div style="color: #a0a0b0;">0.99$</div>
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
-                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
-                    </div>
-                </div>
-
-                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
-                    <div style="color: #2e3d52;">Product 2</div>
-                    <div style="color: #a0a0b0;">2x</div>
-                    <div style="color: #a0a0b0;">0.99$</div>
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
-                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
-                    </div>
-                </div>
-
-                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
-                    <div style="color: #2e3d52;">Product 3</div>
-                    <div style="color: #a0a0b0;">4x</div>
-                    <div style="color: #a0a0b0;">0.99$</div>
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
-                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
-                    </div>
-                </div>
-
-                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
-                    <div style="color: #2e3d52;">Product 4</div>
-                    <div style="color: #a0a0b0;">8x</div>
-                    <div style="color: #a0a0b0;">0.99$</div>
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
-                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
-                    </div>
-                </div>
-
-                <div class="order-table-row" style="display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.2fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #eee; align-items: center;">
-                    <div style="color: #2e3d52;">Product 5</div>
-                    <div style="color: #a0a0b0;">16x</div>
-                    <div style="color: #a0a0b0;">0.99$</div>
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                        <button class="action-btn-plus" style="width: 36px; height: 36px; background-color: #5a8e7a; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">+</button>
-                        <button class="action-btn-minus" style="width: 36px; height: 36px; background-color: #3b4257; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">−</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display: flex; justify-content: center; align-items: center; padding: 1.5rem 0; color: #a0a0b0;">
-                <span style="margin-right: 1rem;">Total price:</span>
-                <span id="checkout-total-price" style="font-size: 1.6rem; font-weight: bold; color: #2e3d52;">5.99$</span>
-            </div>
-
-            <div class="d-flex gap-3 mb-4">
-                <button class="btn-next" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Order</button>
-                <button class="btn-cancel" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
+        <div id="checkout-content" class="content-section w-100 d-flex flex-column align-items-center" style="max-width: 600px;">
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">checkout</h2>
+            <div class="order-table-container w-100 mb-4"></div>
+            <div class="d-flex gap-3 mb-4 w-100">
+                <button class="btn btn-cancel fw-semibold py-3 px-4 rounded-3 fs-5" style="background-color: #cbd5e1; color: #475569; border: none; flex: 1;">Cancel</button>
+                <button id="btn-submit-order" class="btn fw-semibold py-3 px-4 rounded-3 fs-5 text-white" style="background-color: #2e3d52; border: none; flex: 2;">Order</button>
             </div>
         </div>
 
-        <div id="payment-content" class="content-section d-none vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
-            <div class="flex-fill">
-            <div class="fw-bold fs-2 text-center my-3">Please pay <span id="checkout-total-price" style="color: #87718B;">5.99$</span> at the register</div>
-            <div class="fw-bold fs-2 text-center my-5">An employee will confirm your <span style="color: #87718B;">payment</span></div>
-            </div>
-
-            <div class="d-flex gap-3 mb-4">
-                <button class="btn-next" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Continue</button>
-                <button class="btn-cancel" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #3b4257; color: #a2a2bd; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Cancel</button>
-            </div>
+        <div id="payment-content" class="content-section w-100 d-none flex-column align-items-center" style="max-width: 600px;">
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">payment</h2>
+            <div class="fs-4 mb-3" style="color:#2e3d52;">Total cost to pay at the register</div>
+            <div class="fw-bold fs-2 text-center my-5" id="payment-total-amount">0.00$</div>
+            <div class="alert alert-info text-center w-100">Oczekiwanie na potwierdzenie płatności przez kasjera...</div>
         </div>
 
-        <div id="proccessing-content" class="content-section d-none vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
-            <div class="flex-fill">
-            <div class="fw-bold fs-2 text-center my-3">Payment complete</div>
-            <div class="fw-bold fs-2 text-center my-5">Your number is <span style="color: #87718B;">51</span></div>
-            </div>
-
-            <div class="d-flex gap-3 mb-4">
-                <button class="btn-next" style="flex: 1; padding: 0.75rem 1.5rem; background-color: #5a8e7a; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer;">Continue</button>
-            </div>
+        <div id="proccessing-content" class="content-section w-100 d-none flex-column align-items-center" style="max-width: 600px;">
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">processing</h2>
+            <div class="fw-bold fs-2 text-center my-5">Preparing your meal...</div>
+            <div class="spinner-border text-secondary mb-3" role="status"></div>
+            <p style="color: #2e3d52;">Twoje zamówienie jest w trakcie przygotowywania przez kuchnię.</p>
         </div>
 
-        <div id="collect-content" class="content-section d-none vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
-            <div class="flex-fill">
-            <div class="fw-bold fs-2 text-center my-3">Please collect your order at the register</div>
-            <div class="fw-bold fs-2 text-center my-5">Thank you</div>
-            </div>
+        <div id="collect-content" class="content-section w-100 d-none flex-column align-items-center" style="max-width: 600px;">
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">collect</h2>
+            <div class="fw-bold fs-2 text-center my-5" style="color: #5a8e7a;">Twoje jedzenie jest gotowe do odbioru!</div>
+            <div class="fs-4 mb-5 text-center">Podejdź do lady i podaj swój numer zamówienia.</div>
+            <a href="main.php" class="btn fw-semibold py-3 px-5 rounded-3 fs-5 text-white text-decoration-none" style="background-color: #2e3d52;">Wróć do strony głównej</a>
         </div>
     </div>
 
@@ -152,28 +195,5 @@
     <script src="product.js"></script>
     <script src="offer.js"></script>
     <script src="checkout.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const ids = ['checkout-content','payment-content','proccessing-content','collect-content'];
-        const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
-
-        function getCurrentSection() {
-            return sections.find(s => !s.classList.contains('d-none')) || null;
-        }
-
-        document.querySelectorAll('.btn-next').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const current = btn.closest('.content-section') || getCurrentSection();
-                const idx = sections.indexOf(current);
-                if (idx >= 0 && idx < sections.length - 1) {
-                    current.classList.add('d-none');
-                    const next = sections[idx + 1];
-                    next.classList.remove('d-none');
-                    next.scrollIntoView({behavior: 'smooth', block: 'start'});
-                }
-            });
-        });
-    });
-    </script>
 </body>
 </html>
