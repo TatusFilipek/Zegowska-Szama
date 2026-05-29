@@ -16,12 +16,13 @@
             
             document.getElementById(tabName).classList.remove('d-none');
             
+            // Czyszczenie stylów ze wszystkich przycisków
             document.querySelectorAll('.tab-btn').forEach(b => {
-                b.style.color = '#a0a0b0';
-                b.style.fontWeight = '400';
+                b.classList.remove('active-tab');
             });
-            this.style.color = '#2e3d52';
-            this.style.fontWeight = '700';
+            
+            // Aktywacja obecnego przycisku
+            this.classList.add('active-tab');
 
             if (tabName === 'orders') reloadOrders();
             if (tabName === 'products') reloadProducts();
@@ -29,10 +30,10 @@
         });
     });
     
+    // Ustawienie pierwszej zakładki jako aktywnej na start
     const firstTab = document.querySelector('.tab-btn');
     if (firstTab) {
-        firstTab.style.color = '#2e3d52';
-        firstTab.style.fontWeight = '700';
+        firstTab.classList.add('active-tab');
     }
 
     // --- ZAKŁADKA: ORDERS ---

@@ -153,140 +153,145 @@ if (isset($_GET['action'])) {
 <body class="vh-100 d-flex flex-column">
 <?php require_once __DIR__ . '/header.php'; ?>
 
-    <div class="flex-fill container-fluid px-4 py-3 overflow-auto">
-        <div class="d-flex gap-3 mb-4 border-bottom pb-3" style="border-color: #4a5568 !important;">
-            <button class="tab-btn fw-bold text-muted" data-tab="orders" style="background: none; border: none; cursor: pointer; font-size: 1rem;">Orders</button>
-            <button class="tab-btn fw-bold text-muted" data-tab="products" style="background: none; border: none; cursor: pointer; font-size: 1rem;">Products</button>
-            <button class="tab-btn fw-bold text-muted" data-tab="users" style="background: none; border: none; cursor: pointer; font-size: 1rem;">Users</button>
-            <button class="tab-btn fw-bold text-muted" data-tab="mail" style="background: none; border: none; cursor: pointer; font-size: 1rem;">Mail</button>
+    <div class="flex-fill overflow-auto">
+        <div class="tabs-container p-0 m-0 mb-4">
+            <button class="tab-btn" data-tab="orders">Orders</button>
+            <span class="tab-divider"></span>
+            <button class="tab-btn" data-tab="products">Products</button>
+            <span class="tab-divider"></span>
+            <button class="tab-btn" data-tab="users">Users</button>
+            <span class="tab-divider"></span>
+            <button class="tab-btn" data-tab="mail">Mail</button>
         </div>
 
-        <div id="orders" class="tab-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">orders</h3>
-                <button class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">Complete</button>
+        <div class="px-5 py-3">
+            <div id="orders" class="tab-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">orders</h3>
+                    <button class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">Complete</button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="table table-borderless">
+                        <thead style="color: #a0a0b0;">
+                            <tr>
+                                <th>User</th>
+                                <th>Number</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-5" style="color: #2e3d52;">
+                    <h5>Authorize <span style="color: #5a8e7a;">collected orders</span></h5>
+                </div>
             </div>
 
-            <div style="overflow-x: auto;">
-                <table class="table table-borderless">
-                    <thead style="color: #a0a0b0;">
-                        <tr>
-                            <th>User</th>
-                            <th>Number</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orders-table-body">
-                    </tbody>
-                </table>
-            </div>
+            <div id="products" class="tab-content d-none">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">products</h3>
+                    <button type="button" onclick="openNewProductModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">New Product</button>
+                </div>
 
-            <div class="mt-5" style="color: #2e3d52;">
-                <h5>Authorize <span style="color: #5a8e7a;">collected orders</span></h5>
-            </div>
-        </div>
+                <div style="overflow-x: auto;" class="mb-5">
+                    <table class="table table-borderless">
+                        <thead style="color: #a0a0b0;">
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Price</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body">
+                        </tbody>
+                    </table>
+                </div>
 
-        <div id="products" class="tab-content d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">products</h3>
-                <button type="button" onclick="openNewProductModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">New Product</button>
-            </div>
-
-            <div style="overflow-x: auto;" class="mb-5">
-                <table class="table table-borderless">
-                    <thead style="color: #a0a0b0;">
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Stock</th>
-                            <th>Price</th>
-                            <th>Edit</th>
-                        </tr>
-                    </thead>
-                    <tbody id="products-table-body">
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="product-modal" class="custom-modal-overlay" onclick="closeProductModalOnOutsideClick(event)">
-                <div class="custom-modal-content">
-                    <button type="button" onclick="closeProductModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.8rem; color: #3b4257; cursor: pointer; font-weight: bold;">&times;</button>
-                    
-                    <form id="product-form">
-                        <h5 class="fw-bold mb-4" style="color: #2e3d52;" id="form-product-title">Add / Edit Product</h5>
-                        <input type="hidden" id="prod-id">
+                <div id="product-modal" class="custom-modal-overlay" onclick="closeProductModalOnOutsideClick(event)">
+                    <div class="custom-modal-content">
+                        <button type="button" onclick="closeProductModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.8rem; color: #3b4257; cursor: pointer; font-weight: bold;">&times;</button>
                         
-                        <div style="width: 120px; height: 120px; background-color: #3b4257; border-radius: 8px; margin-bottom: 1rem;"></div>
-                        <div class="mb-3">
-                            <label style="color: #2e3d52; font-weight: 600;">Name</label>
-                            <input type="text" id="prod-name" class="form-control darkColor" placeholder="text..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label style="color: #2e3d52; font-weight: 600;">Category</label>
-                                <input type="text" id="prod-category" class="form-control darkColor" placeholder="text..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
+                        <form id="product-form">
+                            <h5 class="fw-bold mb-4" style="color: #2e3d52;" id="form-product-title">Add / Edit Product</h5>
+                            <input type="hidden" id="prod-id">
+                            
+                            <div style="width: 120px; height: 120px; background-color: #3b4257; border-radius: 8px; margin-bottom: 1rem;"></div>
+                            <div class="mb-3">
+                                <label style="color: #2e3d52; font-weight: 600;">Name</label>
+                                <input type="text" id="prod-name" class="form-control darkColor" placeholder="text..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
                             </div>
-                            <div class="col-6 mb-3">
-                                <label style="color: #2e3d52; font-weight: 600;">Stock</label>
-                                <input type="number" id="prod-stock" class="form-control darkColor" placeholder="0" style="background-color: #3b4257; color: #a2a2bd; border: none;" required min="0">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label style="color: #2e3d52; font-weight: 600;">Category</label>
+                                    <input type="text" id="prod-category" class="form-control darkColor" placeholder="text..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label style="color: #2e3d52; font-weight: 600;">Stock</label>
+                                    <input type="number" id="prod-stock" class="form-control darkColor" placeholder="0" style="background-color: #3b4257; color: #a2a2bd; border: none;" required min="0">
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label style="color: #2e3d52; font-weight: 600;">Price (cents)</label>
-                                <input type="number" id="prod-price" class="form-control darkColor" placeholder="0" style="background-color: #3b4257; color: #a2a2bd; border: none;" required min="1">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label style="color: #2e3d52; font-weight: 600;">Price (cents)</label>
+                                    <input type="number" id="prod-price" class="form-control darkColor" placeholder="0" style="background-color: #3b4257; color: #a2a2bd; border: none;" required min="1">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label style="color: #2e3d52; font-weight: 600;">discount %</label>
+                                    <input type="number" id="prod-discount" class="form-control darkColor" placeholder="0-100%" style="background-color: #3b4257; color: #a2a2bd; border: none;" min="0" max="100" value="0">
+                                </div>
                             </div>
-                            <div class="col-6 mb-3">
-                                <label style="color: #2e3d52; font-weight: 600;">discount %</label>
-                                <input type="number" id="prod-discount" class="form-control darkColor" placeholder="0-100%" style="background-color: #3b4257; color: #a2a2bd; border: none;" min="0" max="100" value="0">
+                            <div class="d-flex gap-2 mt-4 justify-content-end">
+                                <button type="button" onclick="closeProductModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #8b8b9e; color: white; border: none;">Cancel</button>
+                                <button type="submit" id="prod-submit-btn" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #5a8e7a; color: white; border: none;">Create</button>
                             </div>
-                        </div>
-                        <div class="d-flex gap-2 mt-4 justify-content-end">
-                            <button type="button" onclick="closeProductModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #8b8b9e; color: white; border: none;">Cancel</button>
-                            <button type="submit" id="prod-submit-btn" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #5a8e7a; color: white; border: none;">Create</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="users" class="tab-content d-none">
-            <h3 class="display-6 fw-bold mb-4" style="color: #2e3d52;">Users</h3>
-            <div style="overflow-x: auto;">
-                <table class="table table-borderless">
-                    <thead style="color: #a0a0b0;">
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Change</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table-body">
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-5">
-                <div class="d-flex gap-3 mb-4" style="border-bottom: 1px solid #4a5568; padding-bottom: 1rem;">
-                    <input type="text" id="user-search" class="form-control darkColor" placeholder="Search..." style="background-color: #3b4257; color: #a2a2bd; border: none; max-width: 300px;">
-                    <button class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">Name</button>
+            <div id="users" class="tab-content d-none">
+                <h3 class="display-6 fw-bold mb-4" style="color: #2e3d52;">Users</h3>
+                <div style="overflow-x: auto;">
+                    <table class="table table-borderless">
+                        <thead style="color: #a0a0b0;">
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-5">
+                    <div class="d-flex gap-3 mb-4" style="border-bottom: 1px solid #4a5568; padding-bottom: 1rem;">
+                        <input type="text" id="user-search" class="form-control darkColor" placeholder="Search..." style="background-color: #3b4257; color: #a2a2bd; border: none; max-width: 300px;">
+                        <button class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">Name</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="mail" class="tab-content d-none">
-            <form id="mail-form">
-                <h3 class="display-6 fw-bold mb-4" style="color: #2e3d52;">Mail</h3>
-                <div class="mb-4">
-                    <label style="color: #2e3d52; font-weight: 600; display: block; margin-bottom: 0.5rem;">Title</label>
-                    <input type="text" id="mail-title" class="form-control darkColor" placeholder="uwaga !!!" style="background-color: #3b4257; color: #a2a2bd; border: none; font-size: 1rem;" required>
-                </div>
-                <div class="mb-4">
-                    <label style="color: #2e3d52; font-weight: 600; display: block; margin-bottom: 0.5rem;">Content</label>
-                    <textarea id="mail-content" class="form-control darkColor" placeholder="Wpisz treść komunikatu..." style="background-color: #3b4257; color: #a2a2bd; border: none; font-size: 1rem; min-height: 200px;" required></textarea>
-                </div>
-                <button type="submit" class="btn fw-semibold px-5 py-2 rounded-2" style="background-color: #5a8e7a; color: white; border: none;">Push</button>
-            </form>
+            <div id="mail" class="tab-content d-none">
+                <form id="mail-form">
+                    <h3 class="display-6 fw-bold mb-4" style="color: #2e3d52;">Mail</h3>
+                    <div class="mb-4">
+                        <label style="color: #2e3d52; font-weight: 600; display: block; margin-bottom: 0.5rem;">Title</label>
+                        <input type="text" id="mail-title" class="form-control darkColor" placeholder="uwaga !!!" style="background-color: #3b4257; color: #a2a2bd; border: none; font-size: 1rem;" required>
+                    </div>
+                    <div class="mb-4">
+                        <label style="color: #2e3d52; font-weight: 600; display: block; margin-bottom: 0.5rem;">Content</label>
+                        <textarea id="mail-content" class="form-control darkColor" placeholder="Wpisz treść komunikatu..." style="background-color: #3b4257; color: #a2a2bd; border: none; font-size: 1rem; min-height: 200px;" required></textarea>
+                    </div>
+                    <button type="submit" class="btn fw-semibold px-5 py-2 rounded-2" style="background-color: #5a8e7a; color: white; border: none;">Push</button>
+                </form>
+            </div>
         </div>
     </div>
 
