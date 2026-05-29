@@ -3,13 +3,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Jeśli użytkownik nie jest adminem, przekieruj go na stronę główną
 if (!isset($_SESSION['role_id']) || (int)$_SESSION['role_id'] !== 1) {
     header("Location: main.php");
     exit();
 }
 
-// Połączenie z bazą danych
 $host = 'localhost';
 $db   = 'szama';
 $user = 'root';
@@ -29,7 +27,6 @@ try {
     die("Błąd połączenia z bazą danych: " . $e->getMessage());
 }
 
-// --- BACKEND API DLA OPERACJI ASYNCHRONICZNYCH (AJAX) ---
 if (isset($_GET['action'])) {
     header('Content-Type: application/json');
     $action = $_GET['action'];
@@ -44,6 +41,19 @@ if (isset($_GET['action'])) {
         if ($action === 'get_products') {
             $stmt = $pdo->query("SELECT id, name, category, price_cents, discount_percent, stock FROM products ORDER BY id DESC");
             echo json_encode($stmt->fetchAll());
+            exit;
+        }
+
+        if ($action === 'get_offers') {
+            $stmt = $pdo->query("SELECT id, name, price FROM offers ORDER BY id DESC");
+            $offers = $stmt->fetchAll();
+
+            foreach ($offers as &$offer) {
+                $pStmt = $pdo->prepare("SELECT product_id, quantity FROM offer_products WHERE offer_id = ?");
+                $pStmt->execute([$offer['id']]);
+                $offer['products'] = $pStmt->fetchAll();
+            }
+            echo json_encode($offers);
             exit;
         }
         
@@ -72,6 +82,40 @@ if (isset($_GET['action'])) {
                     $stmt->execute([$input['name'], $input['category'], $input['price_cents'], $input['discount_percent'], $input['stock']]);
                 }
                 echo json_encode(['success' => true]);
+                exit;
+            }
+
+            if ($action === 'save_offer') {
+                $pdo->beginTransaction();
+                try {
+                    if (!empty($input['id'])) {
+                        $offerId = $input['id'];
+                        $stmt = $pdo->prepare("UPDATE offers SET name = ?, price = ? WHERE id = ?");
+                        $stmt->execute([$input['name'], $input['price'], $offerId]);
+                    } else {
+                        $stmt = $pdo->prepare("INSERT INTO offers (name, price) VALUES (?, ?)");
+                        $stmt->execute([$input['name'], $input['price']]);
+                        $offerId = $pdo->lastInsertId();
+                    }
+
+                    $deleteStmt = $pdo->prepare("DELETE FROM offer_products WHERE offer_id = ?");
+                    $deleteStmt->execute([$offerId]);
+
+                    if (!empty($input['items']) && is_array($input['items'])) {
+                        $insertStmt = $pdo->prepare("INSERT INTO offer_products (offer_id, product_id, quantity) VALUES (?, ?, ?)");
+                        foreach ($input['items'] as $item) {
+                            if ((int)$item['quantity'] > 0) {
+                                $insertStmt->execute([$offerId, $item['product_id'], $item['quantity']]);
+                            }
+                        }
+                    }
+
+                    $pdo->commit();
+                    echo json_encode(['success' => true]);
+                } catch (Exception $innerException) {
+                    $pdo->rollBack();
+                    throw $innerException;
+                }
                 exit;
             }
 
@@ -104,7 +148,6 @@ if (isset($_GET['action'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">
     <style>
-        /* Nadpisanie kolorów placeholderów */
         .darkColor::placeholder {
             color: #a2a2bd !important;
             opacity: 1;
@@ -114,16 +157,64 @@ if (isset($_GET['action'])) {
             opacity: 1;
         }
 
-        /* STYLIZACJA OKNA MODALNEGO (MENU DODAWANIA NAD STRONĄ) */
+        /* STYLIZACJA AKTYWNYCH INPUTÓW W CAŁYM PROJEKCIE */
+        input:focus, textarea:focus {
+            color: #ffffff !important;
+            background-color: #434b63 !important;
+            outline: none;
+            box-shadow: 0 0 5px rgba(90, 142, 122, 0.5);
+        }
+
+        /* KONTENER DLA MENU ZAKŁADEK (WYGLĄD BELKI ZE ZDJĘCIA) */
+        .tabs-container {
+            display: flex;
+            align-items: center;
+            background-color: #92b18d;
+            border-bottom: 2px solid #4a6b52;
+            padding: 0;
+            width: 100%;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4a586e;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .tab-btn:hover {
+            color: #2e3d52;
+        }
+
+        .tab-divider {
+            width: 1px;
+            height: 30px;
+            background-color: #4a586e;
+            opacity: 0.7;
+        }
+
+        .tab-btn.active-tab {
+            color: #2e3d52 !important;
+            font-weight: 700 !important;
+        }
+
+        /* MODALE OVERLAY */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-color: rgba(0, 0, 0, 0.6); /* Przyciemnienie reszty strony */
-            backdrop-filter: blur(3px); /* Delikatne rozmycie tła */
-            z-index: 1050; /* Nad wszystkimi elementami */
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 1050;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -154,23 +245,25 @@ if (isset($_GET['action'])) {
 <?php require_once __DIR__ . '/header.php'; ?>
 
     <div class="flex-fill overflow-auto">
-        <div class="tabs-container p-0 m-0 mb-4">
+        
+        <div class="tabs-container mb-4">
             <button class="tab-btn" data-tab="orders">Orders</button>
             <span class="tab-divider"></span>
             <button class="tab-btn" data-tab="products">Products</button>
+            <span class="tab-divider"></span>
+            <button class="tab-btn" data-tab="offers">Offers</button>
             <span class="tab-divider"></span>
             <button class="tab-btn" data-tab="users">Users</button>
             <span class="tab-divider"></span>
             <button class="tab-btn" data-tab="mail">Mail</button>
         </div>
 
-        <div class="px-5 py-3">
+        <div class="px-4 py-3">
             <div id="orders" class="tab-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">orders</h3>
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">Orders</h3>
                     <button class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">Complete</button>
                 </div>
-
                 <div style="overflow-x: auto;">
                     <table class="table table-borderless">
                         <thead style="color: #a0a0b0;">
@@ -180,11 +273,9 @@ if (isset($_GET['action'])) {
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="orders-table-body">
-                        </tbody>
+                        <tbody id="orders-table-body"></tbody>
                     </table>
                 </div>
-
                 <div class="mt-5" style="color: #2e3d52;">
                     <h5>Authorize <span style="color: #5a8e7a;">collected orders</span></h5>
                 </div>
@@ -192,10 +283,9 @@ if (isset($_GET['action'])) {
 
             <div id="products" class="tab-content d-none">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">products</h3>
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">Products</h3>
                     <button type="button" onclick="openNewProductModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">New Product</button>
                 </div>
-
                 <div style="overflow-x: auto;" class="mb-5">
                     <table class="table table-borderless">
                         <thead style="color: #a0a0b0;">
@@ -207,19 +297,16 @@ if (isset($_GET['action'])) {
                                 <th>Edit</th>
                             </tr>
                         </thead>
-                        <tbody id="products-table-body">
-                        </tbody>
+                        <tbody id="products-table-body"></tbody>
                     </table>
                 </div>
 
                 <div id="product-modal" class="custom-modal-overlay" onclick="closeProductModalOnOutsideClick(event)">
                     <div class="custom-modal-content">
                         <button type="button" onclick="closeProductModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.8rem; color: #3b4257; cursor: pointer; font-weight: bold;">&times;</button>
-                        
                         <form id="product-form">
                             <h5 class="fw-bold mb-4" style="color: #2e3d52;" id="form-product-title">Add / Edit Product</h5>
                             <input type="hidden" id="prod-id">
-                            
                             <div style="width: 120px; height: 120px; background-color: #3b4257; border-radius: 8px; margin-bottom: 1rem;"></div>
                             <div class="mb-3">
                                 <label style="color: #2e3d52; font-weight: 600;">Name</label>
@@ -254,6 +341,57 @@ if (isset($_GET['action'])) {
                 </div>
             </div>
 
+            <div id="offers" class="tab-content d-none">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="display-6 fw-bold mb-0" style="color: #2e3d52;">Offers</h3>
+                    <button type="button" onclick="openNewOfferModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #3b4257; color: #a2a2bd; border: none;">New Offer</button>
+                </div>
+                <div style="overflow-x: auto;" class="mb-5">
+                    <table class="table table-borderless">
+                        <thead style="color: #a0a0b0;">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="offers-table-body"></tbody>
+                    </table>
+                </div>
+
+                <div id="offer-modal" class="custom-modal-overlay" onclick="closeOfferModalOnOutsideClick(event)">
+                    <div class="custom-modal-content" style="max-width: 650px;">
+                        <button type="button" onclick="closeOfferModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.8rem; color: #3b4257; cursor: pointer; font-weight: bold;">&times;</button>
+                        <form id="offer-form">
+                            <h5 class="fw-bold mb-4" style="color: #2e3d52;" id="form-offer-title">Add / Edit Offer</h5>
+                            <input type="hidden" id="offer-id">
+                            
+                            <div class="mb-3">
+                                <label style="color: #2e3d52; font-weight: 600;">Offer Name</label>
+                                <input type="text" id="offer-name" class="form-control darkColor" placeholder="Zestaw..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
+                            </div>
+                            <div class="mb-3">
+                                <label style="color: #2e3d52; font-weight: 600;">Price (cents)</label>
+                                <input type="number" id="offer-price" class="form-control darkColor" placeholder="0" style="background-color: #3b4257; color: #a2a2bd; border: none;" required min="1">
+                            </div>
+
+                            <div class="mb-3">
+                                <label style="color: #2e3d52; font-weight: 600; display: block;" class="mb-2">Zawartość zestawu (ilość sztuk):</label>
+                                <div id="offer-products-container" style="max-height: 250px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #f8fafc;">
+                                    <div class="text-muted text-center py-2">Ładowanie listy produktów...</div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4 justify-content-end">
+                                <button type="button" onclick="closeOfferModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #8b8b9e; color: white; border: none;">Cancel</button>
+                                <button type="submit" id="offer-submit-btn" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #5a8e7a; color: white; border: none;">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <div id="users" class="tab-content d-none">
                 <h3 class="display-6 fw-bold mb-4" style="color: #2e3d52;">Users</h3>
                 <div style="overflow-x: auto;">
@@ -266,8 +404,7 @@ if (isset($_GET['action'])) {
                                 <th>Change</th>
                             </tr>
                         </thead>
-                        <tbody id="users-table-body">
-                        </tbody>
+                        <tbody id="users-table-body"></tbody>
                     </table>
                 </div>
                 <div class="mt-5">
