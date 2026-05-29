@@ -59,7 +59,8 @@
                         break;
                     case 3:
                         statusText = `<span class="badge bg-success text-white px-2 py-1">Ready to Collect (3)</span>`;
-                        buttonHtml = `<button class="btn btn-sm fw-semibold text-white px-3 py-1 rounded-2" onclick="progressOrderStatus(${o.id})" style="background-color: #3b4257; border: none;">Archive Order ✓</button>`;
+                        // ZMIANA: Wywołujemy dedykowaną funkcję archiveOrderStatus zamiast progressOrderStatus
+                        buttonHtml = `<button class="btn btn-sm fw-semibold text-white px-3 py-1 rounded-2" onclick="archiveOrderStatus(${o.id})" style="background-color: #3b4257; border: none;">Archive Order ✓</button>`;
                         break;
                     default:
                         statusText = `<span class="badge bg-secondary text-white px-2 py-1">Archived / Done (${currentStatus})</span>`;
@@ -94,6 +95,31 @@
             alert('Wystąpił błąd podczas aktualizacji etapu zamówienia.');
         }
     };
+
+    // Nowa funkcja obsługująca archiwizację (ustawienie statusu na 0)
+    async function archiveOrderStatus(id) {
+        if (!confirm('Czy na pewno chcesz zarchiwizować to zamówienie?')) return;
+        
+        try {
+            const res = await fetch('manage.php?action=archive_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Funkcja reloadOrders() musi być widoczna lub wywołana, aby odświeżyć widok tabeli
+                location.reload(); 
+            } else {
+                alert('Błąd: ' + (data.error || 'Nie udało się zarchiwizować zamówienia.'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Wystąpił błąd komunikacji z serwerem.');
+        }
+    }
+    // Przypisujemy do obiektu window, aby funkcja wywoływana przez "onclick" w HTML działała poprawnie
+    window.archiveOrderStatus = archiveOrderStatus;
 
     // --- ZAKŁADKA: PRODUCTS ---
     async function reloadProducts() {

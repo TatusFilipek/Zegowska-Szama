@@ -130,30 +130,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-flex flex-column align-items-center">
         <div class="mb-2 w-100" style="max-width: 600px;">
             <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex flex-column align-items-center-step" id="step-icon-1">
-                    <small>Checkout</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2 active-circle-step" style="width: 40px; height: 40px; background-color: #5a8e7a; color: white; font-weight: bold;">1</div>
+                <div class="d-flex flex-column align-items-center">
+                    <small style="color: #2e3d52;">Checkout</small>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #5a8e7a; color: white; font-weight: bold;">1</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
                     <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center-step" id="step-icon-2">
-                    <small>Payment</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">2</div>
+                <div class="d-flex flex-column align-items-center">
+                    <small style="color: #2e3d52;">Payment</small>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #37645D; color: white; font-weight: bold;">2</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
-                    <div style="height: 2px; width: 100%; background-color: #3b4257;"></div>
+                    <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center-step" id="step-icon-3">
-                    <small>Processing</small>
+                <div class="d-flex flex-column align-items-center">
+                    <small style="color: #a0a0b0;">Processing</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">3</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
-                    <div style="height: 2px; width: 100%; background-color: #3b4257;"></div>
+                    <div style="height: 2px; width: 100%; background-color: #c9a3a3;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center-step" id="step-icon-4">
-                    <small>Collect</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">4</div>
+                <div class="d-flex flex-column align-items-center">
+                    <small style="color: #a0a0b0;">Collect</small>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #7a7a8e; color: white; font-weight: bold;">4</div>
                 </div>
             </div>
         </div>
@@ -161,9 +161,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         <div id="checkout-content" class="content-section w-100 d-flex flex-column align-items-center" style="max-width: 600px;">
             <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">checkout</h2>
             <div class="order-table-container w-100 mb-4"></div>
-            <div class="d-flex gap-3 mb-4 w-100">
+            
+            <div id="checkout-actions-container" class="d-flex gap-3 mb-4 w-100 d-none">
                 <button class="btn btn-cancel fw-semibold py-3 px-4 rounded-3 fs-5" style="background-color: #cbd5e1; color: #475569; border: none; flex: 1;">Cancel</button>
-                <button id="btn-submit-order" class="btn fw-semibold py-3 px-4 rounded-3 fs-5 text-white" style="background-color: #2e3d52; border: none; flex: 2;">Order</button>
+                <button id="btn-submit-order" class="btn fw-semibold py-3 px-4 rounded-3 fs-5 text-white" style="background-color: #2e3d52; border: none; flex: 2;" disabled>0.00$</button>
             </div>
         </div>
 
@@ -195,5 +196,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     <script src="product.js"></script>
     <script src="offer.js"></script>
     <script src="checkout.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const actionsContainer = document.getElementById('checkout-actions-container');
+        const submitBtn = document.getElementById('btn-submit-order');
+        
+        // Funkcja do pobierania asynchronicznego pełnych danych o cenach z bazy (tak jak w checkout.js)
+        async function updateOrderButtonPrice() {
+            try {
+                const stored = localStorage.getItem('zegowskaCart');
+                let cart = [];
+                try {
+                    if (stored) cart = JSON.parse(stored) || [];
+                } catch(e) { cart = []; }
+
+                if (!cart || cart.length === 0) {
+                    if (actionsContainer) actionsContainer.classList.add('d-none');
+                    if (submitBtn) {
+                        submitBtn.setAttribute('disabled', 'true');
+                        submitBtn.textContent = "0.00$";
+                    }
+                    return;
+                }
+
+                // Pobieramy dane cen z bazy
+                const [resProducts, resOffers] = await Promise.all([
+                    fetch('api.php'),
+                    fetch('offers-api.php')
+                ]);
+
+                if (!resProducts.ok || !resOffers.ok) return;
+
+                const allProducts = await resProducts.ok ? await resProducts.json() : [];
+                const allOffers = await resOffers.ok ? await resOffers.json() : [];
+
+                let totalCents = 0;
+
+                cart.forEach(item => {
+                    const quantity = parseInt(item.quantity, 10) || 0;
+                    if (typeof item.id === 'string' && item.id.startsWith('offer_')) {
+                        const offerId = parseInt(item.id.replace('offer_', ''), 10);
+                        const dbOffer = allOffers.find(o => parseInt(o.id, 10) === offerId);
+                        if (dbOffer) {
+                            totalCents += (parseInt(dbOffer.price, 10) || 0) * quantity;
+                        }
+                    } else {
+                        const productId = parseInt(item.id, 10);
+                        const dbProd = allProducts.find(p => parseInt(p.id, 10) === productId);
+                        if (dbProd) {
+                            const priceCents = parseInt(dbProd.price_cents, 10) || 0;
+                            const discount = parseInt(dbProd.discount_percent, 10) || 0;
+                            const finalUnitPrice = discount > 0 ? Math.round(priceCents * (1 - discount / 100)) : priceCents;
+                            totalCents += finalUnitPrice * quantity;
+                        }
+                    }
+                });
+
+                const formattedPrice = (totalCents / 100).toFixed(2) + '$';
+
+                // Aktualizacja przycisku i widoczności
+                if (actionsContainer) actionsContainer.classList.remove('d-none');
+                if (submitBtn) {
+                    submitBtn.removeAttribute('disabled');
+                    submitBtn.textContent = formattedPrice;
+                }
+            } catch (err) {
+                console.error("Błąd aktualizacji ceny na guziku:", err);
+            }
+        }
+
+        // Pierwsze wywołanie
+        updateOrderButtonPrice();
+
+        // Nasłuchiwanie zmian ilości w koszyku (przyciski plus/minus generowane przez checkout.js)
+        document.addEventListener('click', (e) => {
+            if (e.target && (e.target.classList.contains('action-btn-plus') || e.target.classList.contains('action-btn-minus') || e.target.classList.contains('btn-cancel'))) {
+                setTimeout(updateOrderButtonPrice, 50);
+            }
+        });
+    });
+    </script>
 </body>
 </html>
