@@ -20,16 +20,16 @@ $isAdmin = $loggedIn && isset($_SESSION['role_id']) && (int)$_SESSION['role_id']
 
     <div class="d-none d-md-flex gap-5 my-auto fs-3 me-3">
 <?php if ($loggedIn): ?>
-        <a class="text-capitalize" href="profile.php">Profile</a>
-        <a class="text-capitalize" href="checkout.php">Checkout</a>
-        <a class="text-capitalize" href="notifications.php">Notifications</a>
-        <a class="text-capitalize" href="offers.php">Offers</a>
+        <a class="text-capitalize" href="profile.php">Profil</a>
+        <a class="text-capitalize" href="checkout.php">Koszyk</a>
+        <a class="text-capitalize" href="notifications.php">Powiadomienia</a>
+        <a class="text-capitalize" href="offers.php">Oferty</a>
         <?php if ($isAdmin): ?>
-            <a class="text-capitalize" href="manage.php">Manage</a>
+            <a class="text-capitalize" href="manage.php">Zarządzaj</a>
         <?php endif; ?>
 <?php else: ?>
-        <a class="text-capitalize" href="login.php">Login</a>
-        <a class="text-capitalize" href="register.php">Register</a>
+        <a class="text-capitalize" href="login.php">Zaloguj się</a>
+        <a class="text-capitalize" href="register.php">Rejestracja</a>
 <?php endif; ?>
     </div>
     
@@ -38,16 +38,16 @@ $isAdmin = $loggedIn && isset($_SESSION['role_id']) && (int)$_SESSION['role_id']
     </div>
     <ul class="row dropdown-menu custom-dropdown-menu w-100 mt-1 p-0 d-md-none">
 <?php if ($loggedIn): ?>
-        <li><a class="dropdown-item custom-item" href="profile.php">Profile</a></li>
-        <li><a class="dropdown-item custom-item" href="checkout.php">Checkout</a></li>
-        <li><a class="dropdown-item custom-item" href="notifications.php">Notifications</a></li>
-        <li><a class="dropdown-item custom-item" href="offers.php">Offers</a></li>
+        <li><a class="dropdown-item custom-item" href="profile.php">Profil</a></li>
+        <li><a class="dropdown-item custom-item" href="checkout.php">Koszyk</a></li>
+        <li><a class="dropdown-item custom-item" href="notifications.php">Powiadomienia</a></li>
+        <li><a class="dropdown-item custom-item" href="offers.php">Oferty</a></li>
         <?php if ($isAdmin): ?>
-            <li><a class="dropdown-item custom-item" href="manage.php">Manage</a></li>
+            <li><a class="dropdown-item custom-item" href="manage.php">Zarządzaj</a></li>
         <?php endif; ?>
 <?php else: ?>
-        <li><a class="dropdown-item custom-item" href="login.php">Login</a></li>
-        <li><a class="dropdown-item custom-item" href="register.php">Register</a></li>
+        <li><a class="dropdown-item custom-item" href="login.php">Zaloguj się</a></li>
+        <li><a class="dropdown-item custom-item" href="register.php">Rejestracja</a></li>
 <?php endif; ?>
     </ul>
 </div>

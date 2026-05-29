@@ -31,8 +31,8 @@ try {
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-md-none d-inline">
         
         <div class="d-flex gap-3 mb-4">
-            <div class="text-capitalize px-4 pe-5 py-2 text-start fw-bolder fs-4 darkColor rounded-2" style="border: 0px;">Name</div>
-            <input type="text" id="mobile-search" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Search..." style="border: 0px; width: 90%;">
+            <div class="text-capitalize px-4 pe-5 py-2 text-center fw-bolder fs-4 darkColor rounded-2" style="border: 0px;">Nazwa</div>
+            <input type="text" id="mobile-search" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Wyszukaj..." style="border: 0px; width: 90%;">
         </div>
 
         <div class="mb-5">
@@ -50,13 +50,13 @@ try {
                 <span class="bubble bubble-dark" style="right: 40%; top: 10px; width: 70px; opacity: 0.8;"></span>
 
                 <h1 class="display-4 fw-bold promo-text py-4 m-0">
-                    What’s in <span class="accent-text">store</span> today?
+                    Co jest w <span class="accent-text">sklepie</span> dzisiaj?
                 </h1>
             </div>
 
             <div class="d-flex gap-3 mb-4 mx-auto" style="width: 70%;">
-                <div class="text-capitalize px-4 pe-5 py-2 text-start fw-bolder fs-4 darkColor rounded-2" style="border: 0px;">Name</div>
-                <input type="text" id="desktop-search" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Search..." style="border: 0px; width: 90%;">
+                <div class="text-capitalize px-4 pe-5 py-2 text-center fw-bolder fs-4 darkColor rounded-2" style="border: 0px;">Nazwa</div>
+                <input type="text" id="desktop-search" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Wyszukaj..." style="border: 0px; width: 90%;">
             </div>
         </div>
 
@@ -65,7 +65,7 @@ try {
         </div>
     </div>
 
-    <div class="p-3 footer text-lowercase fs-5">School's website</div>
+    <div class="p-3 footer text-lowercase fs-5">Szkolna strona</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

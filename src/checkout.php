@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Zegowska Szama - Checkout</title>
+    <title>Zegowska Szama - Koszyk</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">
 </head>
@@ -131,35 +131,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         <div class="mb-2 w-100" style="max-width: 600px;">
             <div class="d-flex justify-content-between mb-3">
                 <div class="d-flex flex-column align-items-center">
-                    <small style="color: #2e3d52;">Checkout</small>
+                    <small style="color: #2e3d52;">Koszyk</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #5a8e7a; color: white; font-weight: bold;">1</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
                     <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
                 </div>
                 <div class="d-flex flex-column align-items-center">
-                    <small style="color: #2e3d52;">Payment</small>
+                    <small style="color: #2e3d52;">Płatność</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #37645D; color: white; font-weight: bold;">2</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
                     <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
                 </div>
                 <div class="d-flex flex-column align-items-center">
-                    <small style="color: #a0a0b0;">Processing</small>
+                    <small style="color: #a0a0b0;">Przetwarzanie</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">3</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
                     <div style="height: 2px; width: 100%; background-color: #c9a3a3;"></div>
                 </div>
                 <div class="d-flex flex-column align-items-center">
-                    <small style="color: #a0a0b0;">Collect</small>
+                    <small style="color: #a0a0b0;">Odbiór</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #7a7a8e; color: white; font-weight: bold;">4</div>
                 </div>
             </div>
         </div>
 
         <div id="checkout-content" class="content-section w-100 d-flex flex-column align-items-center" style="max-width: 600px;">
-            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">checkout</h2>
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">Koszyk</h2>
             <div class="order-table-container w-100 mb-4"></div>
             
             <div id="checkout-actions-container" class="d-flex gap-3 mb-4 w-100 d-none">
@@ -169,28 +169,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         </div>
 
         <div id="payment-content" class="content-section w-100 d-none flex-column align-items-center" style="max-width: 600px;">
-            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">payment</h2>
-            <div class="fs-4 mb-3" style="color:#2e3d52;">Total cost to pay at the register</div>
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">Płatność</h2>
+            <div class="fs-4 mb-3" style="color:#2e3d52;">Kwota całkowita do zapłaty przy kasie</div>
             <div class="fw-bold fs-2 text-center my-5" id="payment-total-amount">0.00$</div>
             <div class="alert alert-info text-center w-100">Oczekiwanie na potwierdzenie płatności przez kasjera...</div>
         </div>
 
         <div id="proccessing-content" class="content-section w-100 d-none flex-column align-items-center" style="max-width: 600px;">
-            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">processing</h2>
-            <div class="fw-bold fs-2 text-center my-5">Preparing your meal...</div>
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">Przetwarzanie</h2>
+            <div class="fw-bold fs-2 text-center my-5">Przygotowywanie twojego jedzenia...</div>
             <div class="spinner-border text-secondary mb-3" role="status"></div>
             <p style="color: #2e3d52;">Twoje zamówienie jest w trakcie przygotowywania przez kuchnię.</p>
         </div>
 
         <div id="collect-content" class="content-section w-100 d-none flex-column align-items-center" style="max-width: 600px;">
-            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">collect</h2>
+            <h2 class="display-6 fw-bold mb-4 w-100 text-start" style="color: #2e3d52;">Odbiór</h2>
             <div class="fw-bold fs-2 text-center my-5" style="color: #5a8e7a;">Twoje jedzenie jest gotowe do odbioru!</div>
             <div class="fs-4 mb-5 text-center">Podejdź do lady i podaj swój numer zamówienia.</div>
             <a href="main.php" class="btn fw-semibold py-3 px-5 rounded-3 fs-5 text-white text-decoration-none" style="background-color: #2e3d52;">Wróć do strony głównej</a>
         </div>
     </div>
 
-    <div class="p-3 footer text-lowercase fs-5">School's website</div>
+    <div class="p-3 footer text-lowercase fs-5">Szkolna strona</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="product.js"></script>

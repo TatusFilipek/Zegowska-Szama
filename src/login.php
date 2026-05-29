@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Zegowska Szama - Login</title>
+    <title>Zegowska Szama - Logowanie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">
     <style>
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-flex flex-column align-items-center">
         <div style="max-width: 500px; width: 100%;">
-            <h3 class="display-6 fw-bold mb-4 border-bottom pb-3" style="color: #2e3d52; border-color: #4a5568 !important;">Login</h3>
+            <h3 class="display-6 fw-bold mb-4 border-bottom pb-3" style="color: #2e3d52; border-color: #4a5568 !important;">Zaloguj się</h3>
 
             <?php if ($error): ?>
                 <div class="alert alert-danger" role="alert"><?= htmlspecialchars($error) ?></div>
@@ -60,22 +60,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="mb-5">
-                    <label style="color: #2e3d52; font-weight: 600; display: block; margin-bottom: 0.5rem;">Password</label>
-                    <input name="password" type="password" class="form-control login-input" placeholder="eloelo320123" style="background-color: #3b4257; color: #a2a2bd; border: none; padding: 0.75rem;">
+                    <label style="color: #2e3d52; font-weight: 600; display: block; margin-bottom: 0.5rem;">Hasło</label>
+                    <input name="password" type="password" class="form-control login-input" placeholder="silneHaslo" style="background-color: #3b4257; color: #a2a2bd; border: none; padding: 0.75rem;">
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 mb-4">Login</button>
+                <button type="submit" class="btn btn-primary w-100 mb-4">Zaloguj się</button>
             </form>
 
             <div style="text-align: center;">
                 <span style="color: #2e3d52; font-size: 1rem;">Nie masz konta?</span>
                 <br>
-                <a href="register.php" style="color: #2e3d52; font-weight: 600; text-decoration: none;">Register <span style="font-weight: 400;">instead!</span></a>
+                <a href="register.php" style="color: #2e3d52; font-weight: 600; text-decoration: none;">Zarejestruj <span style="font-weight: 400;">się!</span></a>
             </div>
         </div>
     </div>
 
-    <div class="p-3 footer text-lowercase fs-5">School's website</div>
+    <div class="p-3 footer text-lowercase fs-5">Szkolna strona</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Zegowska Szama - Offers</title>
+    <title>Zegowska Szama - Oferty</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">
 </head>
@@ -56,7 +56,9 @@ function calculateDiscount($conn, $offerId, $offerPrice) {
 ?>
 
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto">
-        <h3 class="display-6 fw-bold mb-4 border-bottom pb-2" style="color: #2e3d52; border-color: #4a5568 !important;">Your offers</h3>
+        <div class="text-start my-4">
+            <h3 class="display-6 border-bottom pb-2 fw-bold" style="color: #4a5568; border-color: #4a5568 !important; font-weight: 300;">Twoje oferty</h3>
+        </div>
 
         <div class="row">
             <?php if (!empty($offers)): ?>
@@ -121,7 +123,7 @@ function calculateDiscount($conn, $offerId, $offerPrice) {
         </div>
     </div>
 
-    <div class="p-3 footer text-lowercase fs-5">School's website</div>
+    <div class="p-3 footer text-lowercase fs-5">Szkolna strona</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="skrypt.js"></script><script src="offer.js"></script>

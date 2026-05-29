@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Zegowska Szama</title>
+    <title>Zegowska Szama - Powiadomienia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">
 </head>
@@ -23,7 +23,7 @@ try {
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto">
         
         <div class="text-start my-4">
-            <h3 class="display-6 border-bottom pb-2 fw-bold" style="color: #4a5568; border-color: #4a5568 !important; font-weight: 300;">Mailbox</h3>
+            <h3 class="display-6 border-bottom pb-2 fw-bold" style="color: #4a5568; border-color: #4a5568 !important; font-weight: 300;">Skrzynka pocztowa</h3>
         </div>
 
         <?php if (!empty($announcements)): ?>
@@ -42,7 +42,7 @@ try {
         </div>
         <?php endif; ?>
     </div>
-    <div class="p-3 footer text-lowercase fs-5">School's website</div>
+    <div class="p-3 footer text-lowercase fs-5">Szkolna strona</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="skrypt.js"></script>
