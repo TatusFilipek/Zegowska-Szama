@@ -53,6 +53,13 @@
     }
 
     function addProductToCart(productId, productName) {
+        // Sprawdzamy czy użytkownik jest zalogowany na podstawie zmiennej z main.php
+        if (!window.isUserLoggedIn) {
+            showLoginRequiredToast();
+            return; // Przerywamy dodawanie do koszyka
+        }
+
+        // Standardowa logika dla zalogowanego użytkownika
         const cart = getCart();
         const entry = cart.find(item => item.id === productId);
         if (entry) {
@@ -62,6 +69,44 @@
         }
         saveCart(cart);
         if (productName) showCartToast(productName);
+    }
+
+    // Nowa funkcja wyświetlająca komunikat z linkiem do logowania dla niezalogowanych
+    function showLoginRequiredToast() {
+        // Sprawdzamy czy taki toast już nie istnieje na stronie (unikamy spamu na ekranie)
+        if (document.getElementById('login-required-toast')) return;
+
+        const toast = document.createElement('div');
+        toast.id = 'login-required-toast';
+        
+        // Treść toastu z odsyłaczem do strony login.php
+        toast.innerHTML = 'Zanim dodasz produkt do koszyka <a href="login.php" style="color: #6ee7b7; text-decoration: underline; font-weight: bold;">zaloguj sie</a>';
+        
+        // Stylowanie dopasowane do dotychczasowego showCartToast
+        toast.style.position = 'fixed';
+        toast.style.right = '20px';
+        toast.style.bottom = '20px';
+        toast.style.padding = '12px 16px';
+        toast.style.background = 'rgba(220, 38, 38, 0.95)'; // Czerwony odcień ostrzegawczy
+        toast.style.color = 'white';
+        toast.style.borderRadius = '12px';
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+        toast.style.zIndex = '9999';
+        toast.style.fontSize = '0.95rem';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.2s ease';
+        
+        document.body.appendChild(toast);
+        
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+        });
+        
+        // Toast zniknie automatycznie po 3.5 sekundy (dłużej, żeby użytkownik zdążył kliknąć)
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
     }
 
     function groupByCategory(products) {

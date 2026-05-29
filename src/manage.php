@@ -1,3 +1,14 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Jeśli użytkownik nie jest adminem, przekieruj go na stronę główną
+if (!isset($_SESSION['role_id']) || (int)$_SESSION['role_id'] !== 1) {
+    header("Location: main.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>

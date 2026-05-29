@@ -52,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $_SESSION['user_id'] = $conn->lastInsertId();
             $_SESSION['user_role'] = 'customer';
+            $_SESSION['role_id'] = 2;
 
             header('Location: main.php');
             exit;

@@ -3,7 +3,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $loggedIn = !empty($_SESSION['user_id']);
+
+// Sprawdzamy, czy użytkownik jest zalogowany i czy jego role_id odpowiada administratorowi (np. 1)
+$isAdmin = $loggedIn && isset($_SESSION['role_id']) && (int)$_SESSION['role_id'] === 1;
 ?>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <div class="header text-lowercase fs-4 d-flex align-items-center gap-4 dropdown p-2 ps-3">
     <div class="my-auto">
         <a href="main.php"><img src="../design/photos/zeg-icon.png" style="width: 55px;"></a>
@@ -18,7 +24,9 @@ $loggedIn = !empty($_SESSION['user_id']);
         <a class="text-capitalize" href="checkout.php">Checkout</a>
         <a class="text-capitalize" href="notifications.php">Notifications</a>
         <a class="text-capitalize" href="offers.php">Offers</a>
-        <a class="text-capitalize" href="manage.php">Manage</a>
+        <?php if ($isAdmin): ?>
+            <a class="text-capitalize" href="manage.php">Manage</a>
+        <?php endif; ?>
 <?php else: ?>
         <a class="text-capitalize" href="login.php">Login</a>
         <a class="text-capitalize" href="register.php">Register</a>
@@ -34,10 +42,16 @@ $loggedIn = !empty($_SESSION['user_id']);
         <li><a class="dropdown-item custom-item" href="checkout.php">Checkout</a></li>
         <li><a class="dropdown-item custom-item" href="notifications.php">Notifications</a></li>
         <li><a class="dropdown-item custom-item" href="offers.php">Offers</a></li>
-        <li><a class="dropdown-item custom-item" href="manage.php">Manage</a></li>
+        <?php if ($isAdmin): ?>
+            <li><a class="dropdown-item custom-item" href="manage.php">Manage</a></li>
+        <?php endif; ?>
 <?php else: ?>
         <li><a class="dropdown-item custom-item" href="login.php">Login</a></li>
         <li><a class="dropdown-item custom-item" href="register.php">Register</a></li>
 <?php endif; ?>
     </ul>
 </div>
+
+<script>
+    window.isUserLoggedIn = <?php echo $loggedIn ? 'true' : 'false' ?>;
+</script>

@@ -70,6 +70,7 @@ try {
     <div class="p-3 footer text-lowercase fs-5">School's website</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="product.js"></script>
     <script src="products-render.js"></script>
     <script src="skrypt.js"></script>

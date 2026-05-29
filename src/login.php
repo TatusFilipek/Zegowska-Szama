@@ -13,12 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '' || $password === '') {
         $error = 'Wypełnij adres e-mail i hasło.';
     } else {
-        $stmt = $conn->prepare('SELECT id, password FROM users WHERE email = ? LIMIT 1');
+        $stmt = $conn->prepare('SELECT id, password, role_id FROM users WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
         if ($user && (password_verify($password, $user['password']) || $user['password'] === $password)) {
             $_SESSION['user_id'] = $user['id'];
+            $_SESSION['role_id'] = $user['role_id'];
             header('Location: main.php');
             exit;
         }
