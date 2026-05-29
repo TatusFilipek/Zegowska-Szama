@@ -1,41 +1,47 @@
-document.querySelectorAll('.category-section').forEach(section => {
-    const container = section.querySelector('.scroll-container');
-    const arrowLeft = section.querySelector('.scroll-arrow-left');
-    const arrowRight = section.querySelector('.scroll-arrow-right');
+function initializeScrollButtons() {
+    document.querySelectorAll('.scroll-container').forEach(container => {
+        if (container.dataset.scrollButtonsInitiated === 'true') return;
+        const wrapper = container.closest('.position-relative');
+        if (!wrapper) return;
+        
+        const arrowLeft = wrapper.querySelector('.scroll-arrow-left');
+        const arrowRight = wrapper.querySelector('.scroll-arrow-right');
+        
+        if (!arrowLeft || !arrowRight) return;
 
-    function updateArrows() {
-        const scrollLeft = container.scrollLeft;
-        const maxScrollLeft = container.scrollWidth - container.clientWidth;
+        function updateArrows() {
+            const scrollLeft = container.scrollLeft;
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
 
-        // Pokazuj lewą strzałkę tylko, gdy przewinięto w prawo (scrollLeft > 0)
-        if (scrollLeft > 5) {
-            arrowLeft.classList.remove('d-none');
-        } else {
-            arrowLeft.classList.add('d-none');
+            if (scrollLeft > 5) {
+                arrowLeft.classList.remove('d-none');
+            } else {
+                arrowLeft.classList.add('d-none');
+            }
+
+            if (maxScrollLeft > scrollLeft + 5) {
+                arrowRight.classList.remove('d-none');
+            } else {
+                arrowRight.classList.add('d-none');
+            }
         }
 
-        // Pokazuj prawą strzałkę tylko, gdy jest jeszcze co przewijać w prawo
-        if (maxScrollLeft > scrollLeft + 5) {
-            arrowRight.classList.remove('d-none');
-        } else {
-            arrowRight.classList.add('d-none');
-        }
-    }
+        arrowLeft.addEventListener('click', () => {
+            container.scrollBy({ left: -200, behavior: 'smooth' });
+        });
 
-    // Przewijanie w lewo
-    arrowLeft.addEventListener('click', () => {
-        container.scrollBy({ left: -200, behavior: 'smooth' });
+        arrowRight.addEventListener('click', () => {
+            container.scrollBy({ left: 200, behavior: 'smooth' });
+        });
+
+        container.addEventListener('scroll', updateArrows);
+        window.addEventListener('resize', updateArrows);
+
+        container.dataset.scrollButtonsInitiated = 'true';
+        setTimeout(updateArrows, 100);
     });
+}
 
-    // Przewijanie w prawo
-    arrowRight.addEventListener('click', () => {
-        container.scrollBy({ left: 200, behavior: 'smooth' });
-    });
+window.initializeScrollButtons = initializeScrollButtons;
 
-    // Reaguj na przewijanie palcem/myszką oraz zmiany rozmiaru okna
-    container.addEventListener('scroll', updateArrows);
-    window.addEventListener('resize', updateArrows);
-
-    // Inicjalne sprawdzenie po załadowaniu makiety
-    setTimeout(updateArrows, 100);
-});
+initializeScrollButtons();

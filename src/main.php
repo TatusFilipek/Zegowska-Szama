@@ -36,22 +36,8 @@ try {
             <input type="text" class="darkColor px-3 py-2 text-start fs-4 rounded-2" placeholder="Search..." style="border: 0px; width: 90%;">
         </div>
 
-        <div class="mb-5 position-relative category-section">
-            <div class="position-relative">
-                <div id="mobile-categories"></div>
-
-                <div class="scroll-arrow-left d-none position-absolute start-0 d-flex align-items-center h-100 top-0 ps-2" style="cursor: pointer; background: linear-gradient(270deg, transparent 0%, white 40%); z-index: 5; padding-right: 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-left text-dark fw-bold" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                    </svg>
-                </div>
-
-                <div class="scroll-arrow-right d-none position-absolute end-0 d-flex align-items-center h-100 top-0 pe-2" style="cursor: pointer; background: linear-gradient(90deg, transparent 0%, white 40%); z-index: 5; padding-left: 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-right text-dark fw-bold" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-                    </svg>
-                </div>
-            </div>
+        <div class="mb-5">
+            <div id="mobile-categories"></div>
         </div>
     </div>
 
@@ -76,23 +62,8 @@ try {
             </div>
         </div>
 
-        <div class="mb-5 position-relative category-section px-4">
-            <div class="position-relative">
-                <div id="desktop-categories"></div>
-                
-
-                <div class="scroll-arrow-left d-none position-absolute start-0 d-flex align-items-center h-100 top-0 ps-2" style="cursor: pointer; background: linear-gradient(270deg, transparent 0%, white 40%); z-index: 5; padding-right: 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-left text-dark fw-bold" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-                    </svg>
-                </div>
-
-                <div class="scroll-arrow-right d-none position-absolute end-0 d-flex align-items-center h-100 top-0 pe-2" style="cursor: pointer; background: linear-gradient(90deg, transparent 0%, white 40%); z-index: 5; padding-left: 20px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-right text-dark fw-bold" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-                    </svg>
-                </div>
-            </div>
+        <div class="mb-5 px-4">
+            <div id="desktop-categories"></div>
         </div>
     </div>
 

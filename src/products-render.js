@@ -33,15 +33,22 @@
 
         categoriesMap.forEach((products, category) => {
             const section = document.createElement('div');
-            section.className = 'mb-4';
+            section.className = 'mb-5';
 
             const h = document.createElement('div');
-            h.className = 'display-6 border-bottom pb-2 mb-3 text-capitalize catHeader';
+            h.className = 'display-6 border-bottom pb-2 mb-4 text-capitalize catHeader';
             h.textContent = category;
             section.appendChild(h);
 
+            const scrollWrapper = document.createElement('div');
+            scrollWrapper.className = 'position-relative';
+            scrollWrapper.style.display = 'flex';
+            scrollWrapper.style.alignItems = 'center';
+            scrollWrapper.style.width = '100%';
+            
             const row = document.createElement('div');
             row.className = 'd-flex overflow-x-auto flex-nowrap gap-5 scroll-container pe-5';
+            row.style.width = '100%';
 
             products.forEach(p => {
                 const item = document.createElement('div');
@@ -69,8 +76,27 @@
                 item.innerHTML = inner;
                 row.appendChild(item);
             });
+            
+            const arrowLeft = document.createElement('div');
+            arrowLeft.className = 'scroll-arrow-left d-none position-absolute start-0 d-flex align-items-center h-100 top-0 ps-2';
+            arrowLeft.style.cursor = 'pointer';
+            arrowLeft.style.background = 'linear-gradient(270deg, transparent 0%, white 40%)';
+            arrowLeft.style.zIndex = '5';
+            arrowLeft.style.paddingRight = '20px';
+            arrowLeft.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-left text-dark fw-bold" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>`;
+            
+            const arrowRight = document.createElement('div');
+            arrowRight.className = 'scroll-arrow-right d-none position-absolute end-0 d-flex align-items-center h-100 top-0 pe-2';
+            arrowRight.style.cursor = 'pointer';
+            arrowRight.style.background = 'linear-gradient(90deg, transparent 0%, white 40%)';
+            arrowRight.style.zIndex = '5';
+            arrowRight.style.paddingLeft = '20px';
+            arrowRight.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-right text-dark fw-bold" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>`;
 
-            section.appendChild(row);
+            scrollWrapper.appendChild(arrowLeft);
+            scrollWrapper.appendChild(row);
+            scrollWrapper.appendChild(arrowRight);
+            section.appendChild(scrollWrapper);
             container.appendChild(section);
         });
     }
@@ -84,15 +110,20 @@
             const section = document.createElement('section');
             section.className = 'mb-4';
 
-            const h = document.createElement('h2');
-            h.className = 'display-6 border-bottom pb-2 mb-3';
-            h.style.color = '#4a5568';
-            h.style.borderColor = '#3b4257';
+            const h = document.createElement('div');
+            h.className = 'display-6 border-bottom pb-2 mb-3 text-capitalize catHeader';
             h.textContent = category;
             section.appendChild(h);
 
+            const scrollWrapper = document.createElement('div');
+            scrollWrapper.className = 'position-relative';
+            scrollWrapper.style.display = 'flex';
+            scrollWrapper.style.alignItems = 'center';
+            scrollWrapper.style.width = '100%';
+            
             const scroller = document.createElement('div');
             scroller.className = 'd-flex overflow-x-auto flex-nowrap gap-3 scroll-container pe-5';
+            scroller.style.width = '100%';
 
             products.forEach(p => {
                 const item = document.createElement('div');
@@ -122,7 +153,26 @@
                 scroller.appendChild(item);
             });
 
-            section.appendChild(scroller);
+            const arrowLeft = document.createElement('div');
+            arrowLeft.className = 'scroll-arrow-left d-none position-absolute start-0 d-flex align-items-center h-100 top-0 ps-2';
+            arrowLeft.style.cursor = 'pointer';
+            arrowLeft.style.background = 'linear-gradient(270deg, transparent 0%, white 40%)';
+            arrowLeft.style.zIndex = '5';
+            arrowLeft.style.paddingRight = '20px';
+            arrowLeft.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-left text-dark fw-bold" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>`;
+            
+            const arrowRight = document.createElement('div');
+            arrowRight.className = 'scroll-arrow-right d-none position-absolute end-0 d-flex align-items-center h-100 top-0 pe-2';
+            arrowRight.style.cursor = 'pointer';
+            arrowRight.style.background = 'linear-gradient(90deg, transparent 0%, white 40%)';
+            arrowRight.style.zIndex = '5';
+            arrowRight.style.paddingLeft = '20px';
+            arrowRight.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-chevron-right text-dark fw-bold" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>`;
+
+            scrollWrapper.appendChild(arrowLeft);
+            scrollWrapper.appendChild(scroller);
+            scrollWrapper.appendChild(arrowRight);
+            section.appendChild(scrollWrapper);
             container.appendChild(section);
         });
     }
@@ -142,6 +192,7 @@
             const grouped = groupByCategory(products);
             renderDesktop(grouped);
             renderMobile(grouped);
+            window.initializeScrollButtons?.();
         } catch (err) {
             console.error(err);
         }
