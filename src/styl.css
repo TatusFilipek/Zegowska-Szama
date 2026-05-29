@@ -109,3 +109,24 @@ a:hover
     border-color: #3b4257 !important;
     border-width: 1px !important;
 }
+
+/* Zmiana koloru placeholderów dla pól z klasą .darkColor */
+.darkColor::placeholder {
+    color: #a2a2bd !important;
+    opacity: 1; /* Wymagane dla Firefoxa */
+}
+
+/* Opcjonalnie: zmiana koloru placeholderów dla wszystkich inputów w panelu */
+input::placeholder, textarea::placeholder {
+    color: #a2a2bd !important;
+    opacity: 1;
+}
+
+/* Styl dla każdego aktywnego pola tekstowego w projekcie */
+input:focus, 
+textarea:focus {
+    color: #ffffff !important; /* Tekst staje się idealnie biały (jaśniejszy od bazowego #a2a2bd) */
+    background-color: #434b63 !important; /* Opcjonalnie: delikatne rozjaśnienie tła pola, by poprawić kontrast */
+    outline: none; /* Usuwa domyślną, systemową obwódkę */
+    box-shadow: 0 0 5px rgba(90, 142, 122, 0.5); /* Delikatna poświata w kolorze Żegowskiej Szamy (#5a8e7a) */
+}
