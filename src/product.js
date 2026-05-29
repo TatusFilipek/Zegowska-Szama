@@ -37,6 +37,10 @@ class Product {
         return discounted;
     }
 
+    getPrice() {
+        return this.price;
+    }
+
     // Is product available
     isAvailable() {
         return Number.isFinite(this.stock) && this.stock > 0;

@@ -102,3 +102,9 @@ a:hover
 .bubble-purple {
     background-color: #7b738b; /* Jasny fioletowy */
 }
+
+.catHeated
+{
+    color: #4a5568;
+    border-color: #3b4257 !important;
+}

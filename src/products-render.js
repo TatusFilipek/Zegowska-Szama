@@ -32,41 +32,42 @@
         container.innerHTML = '';
 
         categoriesMap.forEach((products, category) => {
-            const section = document.createElement('section');
+            const section = document.createElement('div');
             section.className = 'mb-4';
 
-            const h = document.createElement('h2');
-            h.className = 'display-6 border-bottom pb-2';
-            h.style.color = '#4a5568';
-            h.style.borderColor = '#3b4257';
+            const h = document.createElement('div');
+            h.className = 'display-6 border-bottom pb-2 mb-3 text-capitalize catHeader';
             h.textContent = category;
             section.appendChild(h);
 
             const row = document.createElement('div');
-            row.className = 'd-flex flex-row gap-3 pb-2';
+            row.className = 'd-flex overflow-x-auto flex-nowrap gap-5 scroll-container pe-5';
 
             products.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'card border-0 flex-shrink-0';
-                card.style.minWidth = '600px';
+                const item = document.createElement('div');
+                item.className = 'd-flex gap-3';
+                item.style.minWidth = '360px';
+                item.style.minHeight = '120px';
+
+                const originalPrice = centsToPrice(p.getPrice());
+                const discountedPrice = centsToPrice(p.applyDiscount());
+                const priceDisplay = p.discount > 0 
+                    ? `<div class="mt-2 fw-semibold fs-3"><span style="text-decoration: line-through; color: #999; margin-right: 8px;">${originalPrice}</span><span style="color: #dc2626;">${discountedPrice}</span></div>`
+                    : `<div class="mt-2 text-muted fw-semibold fs-3">${originalPrice}</div>`;
 
                 const inner = `
-                    <div class="row g-0 align-items-center">
-                        <div class="col-auto" style="width:300px;">
-                            <div style="width:300px; height:300px; overflow:hidden;">
-                                <img src="${imageUrl(p.picture)}" class="img-fluid" style="object-fit:cover; width:100%; height:100%;" alt="${p.name}">
-                            </div>
-                        </div>
-                        <div class="col ps-3">
-                            <div style="font-size:48px; font-weight:600; line-height:1;">${p.name}</div>
-                            <div style="font-size:32px; font-weight:400; color:#198754; margin-top:8px;">${p.discount}% OFF</div>
-                            <div style="font-size:64px; font-weight:600; margin-top:12px;">${centsToPrice(p.applyDiscount())}</div>
-                        </div>
+                    <div style="width: 120px; height: 120px; overflow: hidden;">
+                        <img src="${imageUrl(p.picture)}" style="width: 120px; height: 120px; object-fit: cover; background-color: #3b4257; border-radius: 0.375rem;" alt="${p.name}">
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark mb-0 fs-3">${p.name}</div>
+                        <small class="d-block text-success mb-2 fs-6">${p.discount}% OFF!</small>
+                        ${priceDisplay}
                     </div>
                 `;
 
-                card.innerHTML = inner;
-                row.appendChild(card);
+                item.innerHTML = inner;
+                row.appendChild(item);
             });
 
             section.appendChild(row);
@@ -84,26 +85,37 @@
             section.className = 'mb-4';
 
             const h = document.createElement('h2');
-            h.className = 'display-6 border-bottom pb-2';
+            h.className = 'display-6 border-bottom pb-2 mb-3';
             h.style.color = '#4a5568';
             h.style.borderColor = '#3b4257';
             h.textContent = category;
             section.appendChild(h);
 
             const scroller = document.createElement('div');
-            scroller.className = 'd-flex overflow-x-auto gap-3 pb-2';
+            scroller.className = 'd-flex overflow-x-auto flex-nowrap gap-3 scroll-container pe-5';
 
             products.forEach(p => {
                 const item = document.createElement('div');
-                item.style.minWidth = '140px';
+                item.style.minWidth = '120px';
+                item.style.minHeight = '220px';
+                item.style.display = 'flex';
+                item.style.flexDirection = 'column';
+
+                const originalPrice = centsToPrice(p.price_cents);
+                const discountedPrice = centsToPrice(p.applyDiscount());
+                const priceDisplay = p.discount > 0 
+                    ? `<div style="font-size: 0.875rem; font-weight: 500;"><span style="text-decoration: line-through; color: #999; margin-right: 4px;">${originalPrice}</span><span style="color: #dc2626;">${discountedPrice}</span></div>`
+                    : `<div class="text-muted fw-semibold" style="font-size: 0.875rem;">${originalPrice}</div>`;
 
                 const inner = `
-                    <div class="fw-bold text-dark mb-0">${p.name}</div>
-                    <small class="d-block text-success mb-2" style="font-size: 0.75rem;">${p.discount}% OFF!</small>
-                    <div style="width: 100%; aspect-ratio: 1/1; overflow:hidden;">
-                        <img src="${imageUrl(p.picture)}" style="width:100%; height:100%; object-fit:cover;" alt="${p.name}">
+                    <div style="width: 100%; height: 120px; overflow: hidden; flex-shrink: 0;">
+                        <img src="${imageUrl(p.picture)}" style="width:100%; height:100%; object-fit:cover; background-color: #3b4257;" alt="${p.name}">
                     </div>
-                    <div class="mt-2 text-muted text-center fw-semibold">${centsToPrice(p.applyDiscount())}</div>
+                    <div style="height: 80px; display: flex; flex-direction: column; justify-content: space-between; padding-top: 8px;">
+                        <div class="fw-bold text-dark mb-0" style="font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2;">${p.name}</div>
+                        <small class="d-block text-success" style="font-size: 0.75rem;">${p.discount}% OFF!</small>
+                        ${priceDisplay}
+                    </div>
                 `;
 
                 item.innerHTML = inner;

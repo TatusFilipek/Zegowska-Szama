@@ -1,9 +1,9 @@
 <?php
 // Database connection configuration
 $host = 'localhost';
-$database = 'zegowska_szama';
+$database = 'szama';
 $user = 'root';
-$password = '1234';
+$password = '';
 
 // DSN (Data Source Name) for MySQL
 $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";
