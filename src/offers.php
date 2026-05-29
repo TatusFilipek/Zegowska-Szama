@@ -65,7 +65,11 @@ function calculateDiscount($conn, $offerId, $offerPrice) {
                         $offerProducts = getOfferProducts($conn, $offer['id']);
                         $discountPercent = calculateDiscount($conn, $offer['id'], $offer['price']);
                     ?>
-            <div class="col-md-6 mb-5">
+            <div class="col-md-6 mb-5 offer-card" 
+         style="cursor: pointer;"
+         data-id="offer_<?= $offer['id'] ?>" 
+         data-name="<?= htmlspecialchars($offer['name']) ?>" 
+         data-price="<?= $offer['price'] ?>">
                 <div>
                     <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style="border-color: rgba(255, 255, 255, 0.1) !important;">
                         <div class="fw-bold fs-4 text-truncate" style="color: #2e3d52; max-width: 100%; text-transform: uppercase;">
@@ -120,6 +124,77 @@ function calculateDiscount($conn, $offerId, $offerPrice) {
     <div class="p-3 footer text-lowercase fs-5">School's website</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="skrypt.js"></script>
+    <script src="skrypt.js"></script><script src="offer.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Przekazujemy stan zalogowania z PHP
+        const isUserLoggedIn = <?php echo $loggedIn ? 'true' : 'false'; ?>;
+
+        // Przekazujemy całą listę ofert z PHP do tablicy obiektów JavaScript klasy Offer!
+        const rawOffers = <?php echo json_encode($offers); ?>;
+        const allOffers = rawOffers.map(o => new Offer(o));
+
+        function getCart() {
+            const stored = localStorage.getItem('zegowskaCart');
+            if (!stored) return [];
+            try { return JSON.parse(stored) || []; } catch (err) { return []; }
+        }
+
+        function saveCart(cart) {
+            localStorage.setItem('zegowskaCart', JSON.stringify(cart));
+        }
+
+        function showOfferToast(name) {
+            // Kod wyświetlania zielonego toastu (zostaje bez zmian)
+            const toast = document.createElement('div');
+            toast.textContent = `Oferta "${name}" dodana do koszyka.`;
+            toast.style = "position:fixed; right:20px; bottom:20px; padding:12px 16px; background:#46826C; color:white; border-radius:12px; z-index:9999;";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        function showLoginRequiredToast() {
+            // Kod wyświetlania czerwonego toastu (zostaje bez zmian)
+            if (document.getElementById('login-required-toast')) return;
+            const toast = document.createElement('div');
+            toast.id = 'login-required-toast';
+            toast.innerHTML = 'Zanim dodasz ofertę do koszyka <a href="login.php" style="color: #6ee7b7; font-weight: bold;">zaloguj sie</a>';
+            toast.style = "position:fixed; right:20px; bottom:20px; padding:12px 16px; background:rgba(220,38,38,0.95); color:white; border-radius:12px; z-index:9999;";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // Obsługa kliknięcia w karty ofert
+        document.querySelectorAll('.offer-card').forEach((card, index) => {
+            card.addEventListener('click', () => {
+                if (!isUserLoggedIn) {
+                    showLoginRequiredToast();
+                    return;
+                }
+
+                // Pobieramy instancję klasy Offer powiązaną z tą kartą
+                const offerInstance = allOffers[index];
+                let cart = getCart();
+                
+                const existingIndex = cart.findIndex(item => item.id === offerInstance.id);
+                
+                if (existingIndex !== -1) {
+                    // Zgodnie z wymaganiem: ilość zawsze równa 1
+                    cart[existingIndex].quantity = 1;
+                } else {
+                    // Zapisujemy w koszyku tylko ID i quantity (identycznie jak w products-render.js)
+                    cart.push({
+                        id: offerInstance.id, // przechowuje tekst np. 'offer_1'
+                        quantity: 1
+                    });
+                }
+                
+                saveCart(cart);
+                showOfferToast(offerInstance.name);
+            });
+        });
+    });
+    </script>
 </body>
 </html>

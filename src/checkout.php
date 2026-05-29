@@ -106,7 +106,7 @@
 
             <div style="display: flex; justify-content: center; align-items: center; padding: 1.5rem 0; color: #a0a0b0;">
                 <span style="margin-right: 1rem;">Total price:</span>
-                <span style="font-size: 1.6rem; font-weight: bold; color: #2e3d52;">5.99$</span>
+                <span id="checkout-total-price" style="font-size: 1.6rem; font-weight: bold; color: #2e3d52;">5.99$</span>
             </div>
 
             <div class="d-flex gap-3 mb-4">
@@ -117,7 +117,7 @@
 
         <div id="payment-content" class="content-section d-none vh-100 d-flex flex-column" style="width: 100%; max-width: 650px;">
             <div class="flex-fill">
-            <div class="fw-bold fs-2 text-center my-3">Please pay <span style="color: #87718B;">5.99$</span> at the register</div>
+            <div class="fw-bold fs-2 text-center my-3">Please pay <span id="checkout-total-price" style="color: #87718B;">5.99$</span> at the register</div>
             <div class="fw-bold fs-2 text-center my-5">An employee will confirm your <span style="color: #87718B;">payment</span></div>
             </div>
 
@@ -150,6 +150,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="product.js"></script>
+    <script src="offer.js"></script>
     <script src="checkout.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
