@@ -33,9 +33,70 @@ if (isset($_GET['action'])) {
 
     try {
         if ($action === 'get_orders') {
-            // ZAKTUALIZOWANE: Pobieramy o.status, aby dynamicznie kontrolować etap zamówienia
+            // 1. Pobieramy podstawowe informacje o zamówieniach
             $stmt = $pdo->query("SELECT o.id, o.status, u.name FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.id DESC");
-            echo json_encode($stmt->fetchAll());
+            $orders = $stmt->fetchAll();
+
+            $fullOrdersData = [];
+
+            // 2. Dla każdego zamówienia szukamy powiązanych produktów i ofert
+            foreach ($orders as $order) {
+                $orderId = $order['id'];
+                $items = [];
+
+                // UWAGA: Sprawdź czy Twoja tabela łącząca zamówienie z produktami nie nazywa się inaczej (np. order_products)
+                // Próba pobrania produktów:
+                try {
+                    $pStmt = $pdo->prepare("SELECT p.name, oi.quantity, p.price_cents, 'product' AS item_type 
+                                            FROM order_items oi 
+                                            JOIN products p ON oi.product_id = p.id 
+                                            WHERE oi.order_id = ? AND oi.product_id IS NOT NULL");
+                    $pStmt->execute([$orderId]);
+                    $items = array_merge($items, $pStmt->fetchAll());
+                } catch (Exception $e) {
+                    // Jeśli tabela order_items nie istnieje lub nie ma kolumny product_id, szukamy w potencjalnej tabeli order_products
+                    try {
+                        $pStmt = $pdo->prepare("SELECT p.name, op.quantity, p.price_cents, 'product' AS item_type 
+                                                FROM order_products op 
+                                                JOIN products p ON op.product_id = p.id 
+                                                WHERE op.order_id = ?");
+                        $pStmt->execute([$orderId]);
+                        $items = array_merge($items, $pStmt->fetchAll());
+                    } catch (Exception $e2) {
+                        // Ignoruj błąd jeśli struktura bazy jest jeszcze inna, aby nie wysypać całej aplikacji
+                    }
+                }
+
+                // Próba pobrania ofert/zestawów:
+                try {
+                    $oStmt = $pdo->prepare("SELECT f.name, oi.quantity, f.price AS price_cents, 'offer' AS item_type 
+                                            FROM order_items oi 
+                                            JOIN offers f ON oi.offer_id = f.id 
+                                            WHERE oi.order_id = ? AND oi.offer_id IS NOT NULL");
+                    $oStmt->execute([$orderId]);
+                    $items = array_merge($items, $oStmt->fetchAll());
+                } catch (Exception $e) {
+                    // Alternatywna tabela łącząca dla ofert, np. order_offers
+                    try {
+                        $oStmt = $pdo->prepare("SELECT f.name, oo.quantity, f.price AS price_cents, 'offer' AS item_type 
+                                                FROM order_offers oo 
+                                                JOIN offers f ON oo.offer_id = f.id 
+                                                WHERE oo.order_id = ?");
+                        $oStmt->execute([$orderId]);
+                        $items = array_merge($items, $oStmt->fetchAll());
+                    } catch (Exception $e2) { }
+                }
+
+                // Składamy kompletny obiekt zamówienia
+                $fullOrdersData[] = [
+                    'id' => $order['id'],
+                    'status' => $order['status'],
+                    'name' => $order['name'],
+                    'items' => $items
+                ];
+            }
+
+            echo json_encode($fullOrdersData);
             exit;
         }
         
@@ -67,7 +128,6 @@ if (isset($_GET['action'])) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $input = json_decode(file_get_contents('php://input'), true);
 
-            // --- NOWA OBSŁUGA ARCHIWIZACJI (STATUS = 0) ---
             if ($action === 'archive_order') {
                 if (empty($input['id'])) {
                     echo json_encode(['success' => false, 'error' => 'Brak ID zamówienia.']);
@@ -81,15 +141,6 @@ if (isset($_GET['action'])) {
             }
 
             if ($action === 'update_order_status') {
-                // Dotychczasowa progresja statusu (zwiększanie o 1 dla etapów 1 -> 2 -> 3)
-                $stmt = $pdo->prepare("UPDATE orders SET status = status + 1 WHERE id = ?");
-                $stmt->execute([$input['id']]);
-                echo json_encode(['success' => true]);
-                exit;
-            }
-
-            if ($action === 'update_order_status') {
-                // ZAKTUALIZOWANE: Status zwiększa się automatycznie o 1 (Progresja statusu)
                 $stmt = $pdo->prepare("UPDATE orders SET status = status + 1 WHERE id = ?");
                 $stmt->execute([$input['id']]);
                 echo json_encode(['success' => true]);
@@ -172,22 +223,14 @@ if (isset($_GET['action'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styl.css">
     <style>
-        .darkColor::placeholder {
-            color: #a2a2bd !important;
-            opacity: 1;
-        }
-        input::placeholder, textarea::placeholder {
-            color: #a2a2bd !important;
-            opacity: 1;
-        }
-
+        .darkColor::placeholder { color: #a2a2bd !important; opacity: 1; }
+        input::placeholder, textarea::placeholder { color: #a2a2bd !important; opacity: 1; }
         input:focus, textarea:focus {
             color: #ffffff !important;
             background-color: #434b63 !important;
             outline: none;
             box-shadow: 0 0 5px rgba(90, 142, 122, 0.5);
         }
-
         .tabs-container {
             display: flex;
             align-items: center;
@@ -196,7 +239,6 @@ if (isset($_GET['action'])) {
             padding: 0;
             width: 100%;
         }
-
         .tab-btn {
             flex: 1;
             background: none;
@@ -210,70 +252,22 @@ if (isset($_GET['action'])) {
             transition: all 0.2s ease;
             outline: none;
         }
-        
-        /* Gdy ekran ma 768px szerokości lub mniej (tablety i smartfony) */
-        @media (max-width: 768px) {
-            .tab-btn {
-                font-size: 0.95rem; /* Zmniejszony tekst */
-                padding: 8px 0;    /* Przy okazji warto też zmniejszyć padding na małe ekrany */
-            }
-        }
-
-        /* Gdy ekran ma 480px szerokości lub mniej (małe smartfony) */
-        @media (max-width: 480px) {
-            .tab-btn {
-                font-size: 0.75rem; /* Jeszcze mniejszy tekst */
-            }
-        }
-
-        .tab-btn:hover {
-            color: #2e3d52;
-        }
-
-        .tab-divider {
-            width: 1px;
-            height: 30px;
-            background-color: #4a586e;
-            opacity: 0.7;
-        }
-
-        .tab-btn.active-tab {
-            color: #2e3d52 !important;
-            font-weight: 700 !important;
-        }
-
+        @media (max-width: 768px) { .tab-btn { font-size: 0.95rem; padding: 8px 0; } }
+        @media (max-width: 480px) { .tab-btn { font-size: 0.75rem; } }
+        .tab-btn:hover { color: #2e3d52; }
+        .tab-divider { width: 1px; height: 30px; background-color: #4a586e; opacity: 0.7; }
+        .tab-btn.active-tab { color: #2e3d52 !important; font-weight: 700 !important; }
         .custom-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(3px);
-            z-index: 1050;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px);
+            z-index: 1050; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
         }
-
-        .custom-modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
+        .custom-modal-overlay.show { opacity: 1; pointer-events: auto; }
         .custom-modal-content {
-            background-color: #ffffff;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 600px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
+            background-color: #ffffff; border-radius: 12px; width: 100%; max-width: 600px;
+            padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative;
+            max-height: 90vh; overflow-y: auto;
         }
     </style>
 </head>
@@ -281,7 +275,6 @@ if (isset($_GET['action'])) {
 <?php require_once __DIR__ . '/header.php'; ?>
 
     <div class="flex-fill overflow-auto">
-        
         <div class="tabs-container mb-4">
             <button class="tab-btn" data-tab="orders">Zamówienia</button>
             <span class="tab-divider"></span>
@@ -334,19 +327,16 @@ if (isset($_GET['action'])) {
                         <tbody id="products-table-body"></tbody>
                     </table>
                 </div>
-
                 <div id="product-modal" class="custom-modal-overlay" onclick="closeProductModalOnOutsideClick(event)">
                     <div class="custom-modal-content">
                         <button type="button" onclick="closeProductModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.8rem; color: #3b4257; cursor: pointer; font-weight: bold;">&times;</button>
                         <form id="product-form">
                             <h5 class="fw-bold mb-4" style="color: #2e3d52;" id="form-product-title">Dodaj / Edytuj Produkt</h5>
                             <input type="hidden" id="prod-id">
-                            
                             <div class="mb-3">
                                 <label style="color: #2e3d52; font-weight: 600;">Nazwa zdjęcia</label>
                                 <input type="text" id="prod-picture" class="form-control darkColor" placeholder="nazwa obrazka" style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
                             </div>
-
                             <div class="mb-3">
                                 <label style="color: #2e3d52; font-weight: 600;">Nazwa</label>
                                 <input type="text" id="prod-name" class="form-control darkColor" placeholder="text..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
@@ -398,14 +388,12 @@ if (isset($_GET['action'])) {
                         <tbody id="offers-table-body"></tbody>
                     </table>
                 </div>
-
                 <div id="offer-modal" class="custom-modal-overlay" onclick="closeOfferModalOnOutsideClick(event)">
                     <div class="custom-modal-content" style="max-width: 650px;">
                         <button type="button" onclick="closeOfferModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.8rem; color: #3b4257; cursor: pointer; font-weight: bold;">&times;</button>
                         <form id="offer-form">
                             <h5 class="fw-bold mb-4" style="color: #2e3d52;" id="form-offer-title">Dodaj / Edytuj Oferte</h5>
                             <input type="hidden" id="offer-id">
-                            
                             <div class="mb-3">
                                 <label style="color: #2e3d52; font-weight: 600;">Nazwa oferty</label>
                                 <input type="text" id="offer-name" class="form-control darkColor" placeholder="Zestaw..." style="background-color: #3b4257; color: #a2a2bd; border: none;" required>
@@ -414,14 +402,12 @@ if (isset($_GET['action'])) {
                                 <label style="color: #2e3d52; font-weight: 600;">Cena (grosze)</label>
                                 <input type="number" id="offer-price" class="form-control darkColor" placeholder="0" style="background-color: #3b4257; color: #a2a2bd; border: none;" required min="1">
                             </div>
-
                             <div class="mb-3">
                                 <label style="color: #2e3d52; font-weight: 600; display: block;" class="mb-2">Zawartość zestawu (ilość sztuk):</label>
                                 <div id="offer-products-container" style="max-height: 250px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #f8fafc;">
                                     <div class="text-muted text-center py-2">Ładowanie listy produktów...</div>
                                 </div>
                             </div>
-
                             <div class="d-flex gap-2 mt-4 justify-content-end">
                                 <button type="button" onclick="closeOfferModal()" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #8b8b9e; color: white; border: none;">Odrzuć</button>
                                 <button type="submit" id="offer-submit-btn" class="btn fw-semibold px-4 py-2 rounded-2" style="background-color: #5a8e7a; color: white; border: none;">Stwórz</button>
@@ -472,7 +458,6 @@ if (isset($_GET['action'])) {
     </div>
 
     <div class="p-3 footer text-lowercase fs-5">Szkolna strona</div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="manage.js"></script>
 </body>

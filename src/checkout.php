@@ -206,6 +206,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         
         // Funkcja do pobierania asynchronicznego pełnych danych o cenach z bazy (tak jak w checkout.js)
         async function updateOrderButtonPrice() {
+            // Jeśli użytkownik ma już aktywne zamówienie, nie procesujemy koszyka na przycisku
+            if (localStorage.getItem('activeOrderId')) {
+                return;
+            }
+
             try {
                 const stored = localStorage.getItem('zegowskaCart');
                 let cart = [];

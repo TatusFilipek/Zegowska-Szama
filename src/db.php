@@ -3,7 +3,7 @@
 $host = 'localhost';
 $database = 'szama';
 $user = 'root';
-$password = 's';
+$password = '';
 
 // DSN (Data Source Name) for MySQL
 $dsn = "mysql:host=$host;dbname=$database;charset=utf8mb4";

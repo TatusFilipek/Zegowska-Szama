@@ -3,7 +3,8 @@
     const OFFERS_API_URL = 'offers-api.php';
     const CHECKOUT_API_URL = 'checkout.php';
 
-    let currentOrderId = null;
+    // Pobieramy ID zamówienia z localStorage, jeśli istnieje po odświeżeniu
+    let currentOrderId = localStorage.getItem('activeOrderId') ? parseInt(localStorage.getItem('activeOrderId'), 10) : null;
     let statusInterval = null; // Zmienna przechowująca interwał odpytywania
 
     function centsToPrice(cents) {
@@ -146,8 +147,10 @@
             if(step3) { step3.style.backgroundColor = '#5a8e7a'; step3.style.color = 'white'; }
         } else if (activeId === 'collect-content') {
             if(step4) { step4.style.backgroundColor = '#5a8e7a'; step4.style.color = 'white'; }
-            // Zamówienie skończone -> stopujemy odpytywanie
+            // Zamówienie skończone -> stopujemy odpytywanie i czyścimy ID z pamięci
             clearInterval(statusInterval);
+            localStorage.removeItem('activeOrderId');
+            localStorage.removeItem('activeOrderTotal');
         }
     }
 
@@ -155,22 +158,37 @@
     function startOrderStatusPolling() {
         if (statusInterval) clearInterval(statusInterval);
 
-        statusInterval = setInterval(async () => {
+        // Pomocnicza funkcja wykonująca pojedynczy strzał do API
+        const fetchStatus = async () => {
             if (!currentOrderId) return;
-
             try {
                 const res = await fetch(`${CHECKOUT_API_URL}?action=check_status&order_id=${currentOrderId}`);
                 if (!res.ok) return;
 
                 const data = await res.json();
                 if (data.success) {
+                    // Aktualizujemy kwotę na ekranie płatności, jeśli została zapamiętana
+                    const savedTotal = localStorage.getItem('activeOrderTotal');
+                    const totalPaymentEl = document.getElementById('payment-total-amount');
+                    if (savedTotal && totalPaymentEl) {
+                        totalPaymentEl.textContent = savedTotal;
+                    }
                     // Wywołaj aktualizację widoku, jeżeli status zmienił się w panelu managera
                     updateUIVisuallyByStatus(data.status);
+                } else {
+                    // Jeśli zamówienia nie ma w bazie lub wystąpił błąd (np. usunięte), czyścimy stan
+                    clearInterval(statusInterval);
+                    localStorage.removeItem('activeOrderId');
+                    localStorage.removeItem('activeOrderTotal');
                 }
             } catch (e) {
                 console.error("Błąd odpytywania o status zamówienia: ", e);
             }
-        }, 2000); // Odpytywanie co 2 sekundy
+        };
+
+        // Wywołujemy od razu przy starcie, a potem co 2 sekundy
+        fetchStatus();
+        statusInterval = setInterval(fetchStatus, 2000);
     }
 
     function setupWorkflow() {
@@ -192,6 +210,12 @@
 
                     if (response.ok && result.success) {
                         currentOrderId = result.order_id; 
+                        
+                        // Zapamiętujemy ID zamówienia oraz finalną kwotę do zapłaty na wypadek odświeżenia strony
+                        localStorage.setItem('activeOrderId', currentOrderId);
+                        const submitBtnText = submitOrderBtn.textContent;
+                        localStorage.setItem('activeOrderTotal', submitBtnText);
+
                         localStorage.removeItem('zegowskaCart'); // Wyczyszczenie koszyka
                         
                         // Przejdź do kroku oczekiwania na płatność
@@ -212,8 +236,10 @@
 
         document.querySelectorAll('.btn-cancel').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (confirm('Czy chcesz anulować transakcję?')) {
+                if (confirm('Czy chcesz anulować transakTransakcję?')) {
                     localStorage.removeItem('zegowskaCart');
+                    localStorage.removeItem('activeOrderId');
+                    localStorage.removeItem('activeOrderTotal');
                     window.location.href = 'main.php';
                 }
             });
@@ -221,7 +247,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        loadAndRenderCheckout();
         setupWorkflow();
+        
+        // Sprawdzamy czy w localStorage wisi niedokończone zamówienie
+        if (currentOrderId) {
+            // Jeśli tak, uruchamiamy odpytywanie o jego aktualny stan w bazie
+            startOrderStatusPolling();
+        } else {
+            // Jeśli nie ma aktywnego zamówienia, renderujemy standardowy koszyk
+            loadAndRenderCheckout();
+        }
     });
 })();
