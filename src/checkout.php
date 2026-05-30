@@ -28,7 +28,7 @@ try {
     exit;
 }
 
-// --- NOWA OBSŁUGA ZAPYTANIA GET: SPRAWDZANIE STATUSU ---
+// --- NOWA OBSŁUGA ZAPYTANIA GET: SPRAWDZANIE STATUSU I KWOTY ---
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'check_status') {
     header('Content-Type: application/json');
     
@@ -45,7 +45,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     $order = $stmt->fetch();
 
     if ($order) {
-        echo json_encode(['success' => true, 'status' => (int)$order['status']]);
+        // Rekonstrukcja kwoty zamówienia z bazy danych na wypadek odświeżenia strony
+        $totalCents = 0;
+
+        // 1. Zliczanie zwykłych produktów
+        $stmtItems = $pdo->prepare("SELECT unit_price_snapshot, discount_percent_snapshot, quantity FROM order_items WHERE order_id = ?");
+        $stmtItems->execute([$orderId]);
+        $items = $stmtItems->fetchAll();
+
+        foreach ($items as $item) {
+            $price = (int)$item['unit_price_snapshot'];
+            $discount = $item['discount_percent_snapshot'] !== null ? (int)$item['discount_percent_snapshot'] : 0;
+            
+            $finalUnitPrice = $discount > 0 ? (int)round($price * (1 - $discount / 100)) : $price;
+            $totalCents += $finalUnitPrice * (int)$item['quantity'];
+        }
+
+        // 2. Zliczanie ofert / zestawów
+        $stmtOffers = $pdo->prepare("SELECT unit_price_snapshot, quantity FROM order_offers WHERE order_id = ?");
+        $stmtOffers->execute([$orderId]);
+        $offers = $stmtOffers->fetchAll();
+
+        foreach ($offers as $offer) {
+            $totalCents += (int)$offer['unit_price_snapshot'] * (int)$offer['quantity'];
+        }
+
+        echo json_encode([
+            'success' => true, 
+            'status' => (int)$order['status'],
+            'total_price_cents' => $totalCents
+        ]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Nie znaleziono zamówienia.']);
     }
@@ -79,11 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         $stmtOrder->execute([$userId]);
         $orderId = $pdo->lastInsertId();
 
-        $stmtProductFetch = $pdo->prepare("SELECT price_cents, COALESCE(discount_percent, 0) AS discount FROM products WHERE id = ?");
+        $stmtProductFetch = $pdo->prepare("SELECT price_cents, discount_percent FROM products WHERE id = ?");
         $stmtOfferFetch   = $pdo->prepare("SELECT price FROM offers WHERE id = ?");
         
         $stmtInsertItem  = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, unit_price_snapshot, discount_percent_snapshot) VALUES (?, ?, ?, ?, ?)");
         $stmtInsertOffer = $pdo->prepare("INSERT INTO order_offers (order_id, offer_id, quantity, unit_price_snapshot) VALUES (?, ?, ?, ?)");
+
+        $totalCents = 0;
 
         foreach ($cart as $item) {
             $itemId = $item['id'];
@@ -94,20 +125,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
                 $stmtOfferFetch->execute([$offerId]);
                 $offerData = $stmtOfferFetch->fetch();
                 if ($offerData) {
-                    $stmtInsertOffer->execute([$orderId, $offerId, $quantity, (int)$offerData['price']]);
+                    $price = (int)$offerData['price'];
+                    $stmtInsertOffer->execute([$orderId, $offerId, $quantity, $price]);
+                    $totalCents += $price * $quantity;
                 }
             } else {
                 $productId = (int)$itemId;
                 $stmtProductFetch->execute([$productId]);
                 $productData = $stmtProductFetch->fetch();
                 if ($productData) {
-                    $stmtInsertItem->execute([$orderId, $productId, $quantity, (int)$productData['price_cents'], (int)$productData['discount']]);
+                    $basePrice = (int)$productData['price_cents'];
+                    // Bezpieczne sprawdzanie i przypisywanie null/wartości dla discount_percent
+                    $discount = $productData['discount_percent'] !== null ? (int)$productData['discount_percent'] : null;
+                    
+                    $stmtInsertItem->execute([$orderId, $productId, $quantity, $basePrice, $discount]);
+                    
+                    $discountFactor = $discount !== null ? $discount : 0;
+                    $finalUnitPrice = $discountFactor > 0 ? (int)round($basePrice * (1 - $discountFactor / 100)) : $basePrice;
+                    $totalCents += $finalUnitPrice * $quantity;
                 }
             }
         }
 
         $pdo->commit();
-        echo json_encode(['success' => true, 'order_id' => $orderId]);
+        echo json_encode(['success' => true, 'order_id' => $orderId, 'total_price_cents' => $totalCents]);
         exit;
     } catch (Exception $e) {
         $pdo->rollBack();
@@ -132,30 +173,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     <div class="flex-fill container-fluid px-4 py-3 overflow-auto d-flex flex-column align-items-center">
         <div class="mb-2 w-100" style="max-width: 600px;">
             <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex flex-column align-items-center">
+                <div id="step-icon-1" class="d-flex flex-column align-items-center">
                     <small style="color: #2e3d52;">Koszyk</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #5a8e7a; color: white; font-weight: bold;">1</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
                     <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center">
+                <div id="step-icon-2" class="d-flex flex-column align-items-center">
                     <small style="color: #2e3d52;">Płatność</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #37645D; color: white; font-weight: bold;">2</div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">2</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
                     <div style="height: 2px; width: 100%; background-color: #5a8e7a;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center">
+                <div id="step-icon-3" class="d-flex flex-column align-items-center">
                     <small style="color: #a0a0b0;">Przetwarzanie</small>
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">3</div>
                 </div>
                 <div class="flex-grow-1 d-flex align-items-center" style="margin: 0 1rem; margin-top: 0.7rem;">
-                    <div style="height: 2px; width: 100%; background-color: #c9a3a3;"></div>
+                    <div style="height: 2px; width: 100%; background-color: #cbd5e1;"></div>
                 </div>
-                <div class="d-flex flex-column align-items-center">
+                <div id="step-icon-4" class="d-flex flex-column align-items-center">
                     <small style="color: #a0a0b0;">Odbiór</small>
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #7a7a8e; color: white; font-weight: bold;">4</div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px; background-color: #3b4257; color: #a2a2bd; font-weight: bold;">4</div>
                 </div>
             </div>
         </div>
@@ -175,6 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
             <div class="fs-4 mb-3" style="color:#2e3d52;">Kwota całkowita do zapłaty przy kasie</div>
             <div class="fw-bold fs-2 text-center my-5" id="payment-total-amount">0.00$</div>
             <div class="alert alert-info text-center w-100">Oczekiwanie na potwierdzenie płatności przez kasjera...</div>
+            <button class="btn btn-cancel fw-semibold py-2 px-4 rounded-3 mt-3 text-secondary" style="background-color: #e2e8f0; border: none;">Anuluj zamówienie</button>
         </div>
 
         <div id="proccessing-content" class="content-section w-100 d-none flex-column align-items-center" style="max-width: 600px;">
@@ -204,9 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         const actionsContainer = document.getElementById('checkout-actions-container');
         const submitBtn = document.getElementById('btn-submit-order');
         
-        // Funkcja do pobierania asynchronicznego pełnych danych o cenach z bazy (tak jak w checkout.js)
         async function updateOrderButtonPrice() {
-            // Jeśli użytkownik ma już aktywne zamówienie, nie procesujemy koszyka na przycisku
             if (localStorage.getItem('activeOrderId')) {
                 return;
             }
@@ -227,7 +267,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
                     return;
                 }
 
-                // Pobieramy dane cen z bazy
                 const [resProducts, resOffers] = await Promise.all([
                     fetch('api.php'),
                     fetch('offers-api.php')
@@ -235,8 +274,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
 
                 if (!resProducts.ok || !resOffers.ok) return;
 
-                const allProducts = await resProducts.ok ? await resProducts.json() : [];
-                const allOffers = await resOffers.ok ? await resOffers.json() : [];
+                const allProducts = await resProducts.json();
+                const allOffers = await resOffers.json();
 
                 let totalCents = 0;
 
@@ -262,7 +301,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
 
                 const formattedPrice = (totalCents / 100).toFixed(2) + '$';
 
-                // Aktualizacja przycisku i widoczności
                 if (actionsContainer) actionsContainer.classList.remove('d-none');
                 if (submitBtn) {
                     submitBtn.removeAttribute('disabled');
@@ -273,10 +311,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
             }
         }
 
-        // Pierwsze wywołanie
         updateOrderButtonPrice();
 
-        // Nasłuchiwanie zmian ilości w koszyku (przyciski plus/minus generowane przez checkout.js)
         document.addEventListener('click', (e) => {
             if (e.target && (e.target.classList.contains('action-btn-plus') || e.target.classList.contains('action-btn-minus') || e.target.classList.contains('btn-cancel'))) {
                 setTimeout(updateOrderButtonPrice, 50);

@@ -21,6 +21,9 @@
         const tableContainer = document.querySelector('.order-table-container');
         if (!tableContainer) return;
 
+        // Jeśli mamy już aktywne zamówienie, nie renderujemy pustego koszyka na wierzchu
+        if (currentOrderId !== null) return;
+
         if (cartItems.length === 0) {
             tableContainer.innerHTML = '<div class="alert alert-warning text-center">Twój koszyk jest pusty!</div>';
             const submitBtn = document.getElementById('btn-submit-order');
@@ -95,24 +98,21 @@
         }
     }
 
-    // --- FUNKCJA PRZEŁĄCZANIA WIDOKU NA PODSTAWIE STATUSU SQL (0, 1, 2, 3) ---
+    // --- FUNKCJA PRZEŁĄCZANIA WIDOKU NA PODSTAWIE STATUSU SQL ---
     function updateUIVisuallyByStatus(status) {
         const sections = {
-            1: 'checkout-content',  // Nowe zamówienie
-            2: 'proccessing-content',// Opłacone / Kuchnia (Zgodnie z Twoim panelem)
-            3: 'collect-content'     // Gotowe do odbioru
+            1: 'checkout-content',   // Krok 1 (Nowe)
+            2: 'proccessing-content', // Krok 3 (Kuchnia)
+            3: 'collect-content'      // Krok 4 (Gotowe)
         };
 
-        // Wyjątek: Jeśli zamówienie ma status 1, ale koszyk został już wysłany, 
-        // to znaczy, że klient czeka na płatność (krok 2 na frontendzie: payment-content)
         let activeId = sections[status];
         if (status === 1 && currentOrderId !== null) {
-            activeId = 'payment-content';
+            activeId = 'payment-content'; // Krok 2 (Płatność u kasjera)
         }
 
         if (!activeId) return;
 
-        // Ukryj wszystkie sekcje i pokaż aktywną
         ['checkout-content', 'payment-content', 'proccessing-content', 'collect-content'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('d-none');
@@ -121,7 +121,6 @@
         const activeEl = document.getElementById(activeId);
         if (activeEl) activeEl.classList.remove('d-none');
 
-        // Wizualna aktualizacja kroku na pasku progresu (zmiana kolorów)
         updateProgressBar(status, activeId);
     }
 
@@ -131,7 +130,6 @@
         const step3 = document.querySelector('#step-icon-3 div');
         const step4 = document.querySelector('#step-icon-4 div');
 
-        // Reset kolorów pasków
         [step1, step2, step3, step4].forEach(el => {
             if(el) {
                 el.style.backgroundColor = '#3b4257';
@@ -147,48 +145,41 @@
             if(step3) { step3.style.backgroundColor = '#5a8e7a'; step3.style.color = 'white'; }
         } else if (activeId === 'collect-content') {
             if(step4) { step4.style.backgroundColor = '#5a8e7a'; step4.style.color = 'white'; }
-            // Zamówienie skończone -> stopujemy odpytywanie i czyścimy ID z pamięci
+            
+            // Zamówienie skończone -> stopujemy pętlę i czyścimy localStorage
             clearInterval(statusInterval);
             localStorage.removeItem('activeOrderId');
             localStorage.removeItem('activeOrderTotal');
         }
     }
 
-    // --- FUNKCJA ODPOWIEDZIALNA ZA CYKLICZNE ODPYTYWANIE BAZY ---
+    // --- JEDNORAZOWE I CYKLICZNE ODPYTYWANIE O STATUS ZABEZPIECZONE PRZED BŁĘDAMI ---
+    async function fetchStatusOnce() {
+        if (!currentOrderId) return;
+        try {
+            const res = await fetch(`${CHECKOUT_API_URL}?action=check_status&order_id=${currentOrderId}`);
+            if (!res.ok) return;
+
+            const data = await res.json();
+            if (data.success) {
+                const totalPaymentEl = document.getElementById('payment-total-amount');
+                if (totalPaymentEl && data.total_price_cents) {
+                    totalPaymentEl.textContent = centsToPrice(data.total_price_cents);
+                }
+                updateUIVisuallyByStatus(data.status);
+            } else {
+                clearInterval(statusInterval);
+                localStorage.removeItem('activeOrderId');
+                localStorage.removeItem('activeOrderTotal');
+            }
+        } catch (e) {
+            console.error("Cichy błąd pobierania statusu sieci: ", e);
+        }
+    }
+
     function startOrderStatusPolling() {
         if (statusInterval) clearInterval(statusInterval);
-
-        // Pomocnicza funkcja wykonująca pojedynczy strzał do API
-        const fetchStatus = async () => {
-            if (!currentOrderId) return;
-            try {
-                const res = await fetch(`${CHECKOUT_API_URL}?action=check_status&order_id=${currentOrderId}`);
-                if (!res.ok) return;
-
-                const data = await res.json();
-                if (data.success) {
-                    // Aktualizujemy kwotę na ekranie płatności, jeśli została zapamiętana
-                    const savedTotal = localStorage.getItem('activeOrderTotal');
-                    const totalPaymentEl = document.getElementById('payment-total-amount');
-                    if (savedTotal && totalPaymentEl) {
-                        totalPaymentEl.textContent = savedTotal;
-                    }
-                    // Wywołaj aktualizację widoku, jeżeli status zmienił się w panelu managera
-                    updateUIVisuallyByStatus(data.status);
-                } else {
-                    // Jeśli zamówienia nie ma w bazie lub wystąpił błąd (np. usunięte), czyścimy stan
-                    clearInterval(statusInterval);
-                    localStorage.removeItem('activeOrderId');
-                    localStorage.removeItem('activeOrderTotal');
-                }
-            } catch (e) {
-                console.error("Błąd odpytywania o status zamówienia: ", e);
-            }
-        };
-
-        // Wywołujemy od razu przy starcie, a potem co 2 sekundy
-        fetchStatus();
-        statusInterval = setInterval(fetchStatus, 2000);
+        statusInterval = setInterval(fetchStatusOnce, 2000);
     }
 
     function setupWorkflow() {
@@ -206,29 +197,33 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ cart: cart })
                     });
+                    
+                    if (!response.ok) {
+                        throw new Error("Serwer zwrócił błąd wewnętrzny.");
+                    }
+
                     const result = await response.json();
 
-                    if (response.ok && result.success) {
+                    if (result.success) {
                         currentOrderId = result.order_id; 
                         
-                        // Zapamiętujemy ID zamówienia oraz finalną kwotę do zapłaty na wypadek odświeżenia strony
                         localStorage.setItem('activeOrderId', currentOrderId);
-                        const submitBtnText = submitOrderBtn.textContent;
-                        localStorage.setItem('activeOrderTotal', submitBtnText);
-
-                        localStorage.removeItem('zegowskaCart'); // Wyczyszczenie koszyka
                         
-                        // Przejdź do kroku oczekiwania na płatność
-                        updateUIVisuallyByStatus(1);
+                        const totalPaymentEl = document.getElementById('payment-total-amount');
+                        if (totalPaymentEl && result.total_price_cents) {
+                            totalPaymentEl.textContent = centsToPrice(result.total_price_cents);
+                        }
 
-                        // Uruchom pętlę sprawdzającą zmiany z pliku manage.php
+                        localStorage.removeItem('zegowskaCart'); 
+                        
+                        updateUIVisuallyByStatus(1);
                         startOrderStatusPolling();
                     } else {
                         alert(result.error || 'Błąd przy składaniu zamówienia.');
                         submitOrderBtn.disabled = false;
                     }
                 } catch (e) {
-                    alert('Błąd sieci.');
+                    alert('Błąd serwera podczas składania zamówienia. Sprawdź poprawność bazy danych.');
                     submitOrderBtn.disabled = false;
                 }
             });
@@ -236,7 +231,7 @@
 
         document.querySelectorAll('.btn-cancel').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (confirm('Czy chcesz anulować transakTransakcję?')) {
+                if (confirm('Czy chcesz anulować transakcję?')) {
                     localStorage.removeItem('zegowskaCart');
                     localStorage.removeItem('activeOrderId');
                     localStorage.removeItem('activeOrderTotal');
@@ -246,15 +241,14 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         setupWorkflow();
         
-        // Sprawdzamy czy w localStorage wisi niedokończone zamówienie
         if (currentOrderId) {
-            // Jeśli tak, uruchamiamy odpytywanie o jego aktualny stan w bazie
+            // Natychmiast pobierz status i kwotę zamówienia z bazy przed włączeniem pętli
+            await fetchStatusOnce();
             startOrderStatusPolling();
         } else {
-            // Jeśli nie ma aktywnego zamówienia, renderujemy standardowy koszyk
             loadAndRenderCheckout();
         }
     });
